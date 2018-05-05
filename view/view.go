@@ -23,14 +23,19 @@ func Start(viewConfig Config) {
 	r := mux.NewRouter()
 
 	// On the default page we will simply serve our static index page.
-	r.Handle("/", http.FileServer(http.Dir("./webapp/")))
+	// r.Handle("/", http.FileServer(http.Dir("./webapp/")))
 	// We will setup our server so we can serve static assest like images, css from the /static/{file} route
-	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./static/"))))
+	// r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./static/"))))
 
 	r.Handle("/status", StatusHandler).Methods("GET")
 	r.Handle("/contests", authMiddleware(ContestHandler)).Methods("GET")
 
-	http.ListenAndServe(fmt.Sprintf(":%s", viewConfig.Port), handlers.LoggingHandler(os.Stdout, r))
+	headersOk := handlers.AllowedHeaders([]string{"X-Requested-With", "authorization"})
+	originsOk := handlers.AllowedOrigins([]string{"*"})
+	methodsOk := handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "OPTIONS"})
+	handler := handlers.LoggingHandler(os.Stdout, handlers.CORS(headersOk, originsOk, methodsOk)(r))
+
+	http.ListenAndServe(fmt.Sprintf(":%s", viewConfig.Port), handler)
 }
 
 const ApiClientSecret string = "wBFPMoaFta4jWJLooXtkuuareC728R9X"
