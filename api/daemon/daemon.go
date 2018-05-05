@@ -3,8 +3,8 @@ package daemon
 import (
 	"log"
 
-	"mlc/db"
-	"mlc/view"
+	"../db"
+	"../view"
 )
 
 type Config struct {

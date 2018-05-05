@@ -4,7 +4,7 @@ import (
 	"flag"
 	"log"
 
-	"mlc/daemon"
+	"./daemon"
 )
 
 func processFlags() *daemon.Config {
