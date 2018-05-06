@@ -11,7 +11,7 @@ func processFlags() *daemon.Config {
 	daemonConfig := &daemon.Config{}
 
 	flag.StringVar(&daemonConfig.ViewConfig.Port, "port", "8080", "Port")
-	flag.StringVar(&daemonConfig.DbConfig.ConnectString, "db-connect", "host=/var/run/postgresql dbname=gowebapp sslmode=disable", "DB Connect String")
+	flag.StringVar(&daemonConfig.DbConfig.ConnectString, "db-connect", "user=alex dbname=mlc sslmode=disable", "DB Connect String")
 
 	flag.Parse()
 	return daemonConfig

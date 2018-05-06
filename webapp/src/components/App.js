@@ -15,13 +15,20 @@ class App extends Component {
     this.setState();
   }
 
-  // Add access_token if available with each XHR request to API
+  // Add access_token if available with each XHR request to API and
+  // refresh token if it's expired.
   setupAxios() {
     axios.interceptors.request.use(function(config) {
       const token = localStorage.getItem('access_token');
 
       if (token != null) {
         config.headers.Authorization = `Bearer ${token}`;
+      }
+
+      var now = new Date();
+      var expiration_date = localStorage.getItem('expiration_date');
+      if(expiration_date != null && expiration_date > now) {
+        this.parseHash();
       }
 
       return config;
@@ -44,6 +51,11 @@ class App extends Component {
         localStorage.setItem('access_token', authResult.accessToken);
         localStorage.setItem('id_token', authResult.idToken);
         localStorage.setItem('profile', JSON.stringify(authResult.idTokenPayload));
+
+        var expiration_date = new Date();
+        expiration_date.setSeconds(expiration_date.getSeconds() + authResult.expiresIn);
+        localStorage.setItem('expiration_date', expiration_date);
+
         window.location = window.location.href.substr(0, window.location.href.indexOf('#'))
       }
     });
@@ -60,7 +72,6 @@ class App extends Component {
   }
 
   render() {
-    console.log(localStorage.getItem('profile'));
     if (this.loggedIn) {
       return (<LoggedIn />);
     } else {

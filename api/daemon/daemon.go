@@ -1,6 +1,7 @@
 package daemon
 
 import (
+	"fmt"
 	"log"
 
 	"../db"
@@ -13,12 +14,13 @@ type Config struct {
 }
 
 func Run(daemonConfig *Config) error {
-	err := db.InitDb(daemonConfig.DbConfig)
+	dbConn, err := db.InitDb(daemonConfig.DbConfig)
 	if err != nil {
 		log.Printf("Error initializing database: %v\n", err)
 		return err
 	}
 
+	fmt.Println(dbConn)
 	view.Start(daemonConfig.ViewConfig)
 
 	return nil
