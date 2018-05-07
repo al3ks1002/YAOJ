@@ -1,82 +1,108 @@
-import React, { Component } from 'react';
-
-import axios from 'axios';
-import auth0 from 'auth0-js';
-
-import * as Constants from '../utils/auth0-constants.js'
-import Home from './Home.js'
-import LoggedIn from './LoggedIn.js'
+import React, { Component } from "react";
+import { Navbar, Button } from "react-bootstrap";
+import axios from "axios";
 
 class App extends Component {
   constructor(props) {
     super(props);
+
+    this.login = this.login.bind(this);
+    this.logout = this.logout.bind(this);
+    this.renewToken = this.renewToken.bind(this);
+
     this.setupAxios();
-    this.parseHash();
-    this.setState();
   }
 
-  // Add access_token if available with each XHR request to API and
-  // refresh token if it's expired.
+  // Add access_token if available with each XHR request to API
   setupAxios() {
-    axios.interceptors.request.use(function(config) {
-      const token = localStorage.getItem('access_token');
+    axios.interceptors.request.use(
+      function(config) {
+        const token = localStorage.getItem("access_token");
 
-      if (token != null) {
-        config.headers.Authorization = `Bearer ${token}`;
+        if (token != null) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+
+        return config;
+      },
+      function(err) {
+        return Promise.reject(err);
       }
-
-      var now = new Date();
-      var expiration_date = localStorage.getItem('expiration_date');
-      if(expiration_date != null && expiration_date > now) {
-        this.parseHash();
-      }
-
-      return config;
-    }, function(err) {
-      return Promise.reject(err);
-    });
+    );
   }
 
-  // Extract the access_token and id_token from Auth0 Callback after login
-  parseHash() {
-    this.auth0 = new auth0.WebAuth({
-      domain:       Constants.AUTH0_DOMAIN,
-      clientID:     Constants.AUTH0_CLIENT_ID
-    });
-    this.auth0.parseHash(window.location.hash, function(err, authResult) {
-      if (err) {
-        return console.log(err);
-      }
-      if(authResult !== null && authResult.accessToken !== null && authResult.idToken !== null){
-        localStorage.setItem('access_token', authResult.accessToken);
-        localStorage.setItem('id_token', authResult.idToken);
-        localStorage.setItem('profile', JSON.stringify(authResult.idTokenPayload));
-
-        var expiration_date = new Date();
-        expiration_date.setSeconds(expiration_date.getSeconds() + authResult.expiresIn);
-        localStorage.setItem('expiration_date', expiration_date);
-
-        window.location = window.location.href.substr(0, window.location.href.indexOf('#'))
-      }
-    });
+  goTo(route) {
+    this.props.history.replace(`/${route}`);
   }
 
-  // Set user login state
-  setState() {
-    var idToken = localStorage.getItem('id_token');
-    if(idToken){
-      this.loggedIn = true;
-    } else {
-      this.loggedIn = false;
-    }
+  login() {
+    this.props.auth.login();
+  }
+
+  logout() {
+    this.props.auth.logout();
+  }
+
+  renewToken() {
+    this.props.auth.renewToken();
   }
 
   render() {
-    if (this.loggedIn) {
-      return (<LoggedIn />);
-    } else {
-      return (<Home />);
-    }
+    const { isAuthenticated } = this.props.auth;
+
+    return (
+      <div>
+        <Navbar fluid>
+          <Navbar.Header>
+            <Navbar.Brand>
+              <a onClick={this.goTo.bind(this, "home")}>Mlc</a>
+            </Navbar.Brand>
+            <Button
+              bsStyle="primary"
+              className="btn-margin"
+              onClick={this.goTo.bind(this, "home")}
+            >
+              Home
+            </Button>
+            <Button
+              bsStyle="primary"
+              className="btn-margin"
+              onClick={this.goTo.bind(this, "contests")}
+            >
+              Contests
+            </Button>
+
+            {!isAuthenticated() && (
+              <Button
+                bsStyle="primary"
+                className="btn-margin"
+                onClick={this.login}
+              >
+                Log In
+              </Button>
+            )}
+            {isAuthenticated() && (
+              <Button
+                bsStyle="primary"
+                className="btn-margin"
+                onClick={this.goTo.bind(this, "profile")}
+              >
+                Profile
+              </Button>
+            )}
+            {isAuthenticated() && (
+              <Button
+                bsStyle="primary"
+                className="btn-margin"
+                onClick={this.logout}
+              >
+                Log Out
+              </Button>
+            )}
+          </Navbar.Header>
+        </Navbar>
+      </div>
+    );
   }
 }
 

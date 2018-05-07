@@ -1,11 +1,14 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
+import ReactDOM from "react-dom";
 
-import 'bootstrap/dist/css/bootstrap.css';
-import 'bootstrap/dist/css/bootstrap-theme.css';
+import "bootstrap/dist/css/bootstrap.css";
+import "bootstrap/dist/css/bootstrap-theme.css";
 
-import App from './components/App';
-import registerServiceWorker from './registerServiceWorker';
+import registerServiceWorker from "./utils/registerServiceWorker";
 
-ReactDOM.render(<App />, document.getElementById('root'));
+import { makeMainRoutes } from "./utils/routes";
+
+const routes = makeMainRoutes();
+
+ReactDOM.render(routes, document.getElementById("root"));
+
 registerServiceWorker();

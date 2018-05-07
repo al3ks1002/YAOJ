@@ -11,27 +11,30 @@ import (
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	jose "gopkg.in/square/go-jose.v2"
+
+	"../controller"
 )
 
-type Config struct {
-	Port string
+type View struct {
+	Port       string
+	Controller *controller.Controller
 }
 
-func Start(viewConfig Config) {
-	log.Printf("Starting, HTTP on: %s\n", viewConfig.Port)
+func (view View) Start() {
+	log.Printf("Starting, HTTP on: %s\n", view.Port)
 
 	r := mux.NewRouter()
 
 	s := r.PathPrefix("/api").Subrouter()
 	s.Handle("/", StatusHandler).Methods("GET")
-	s.Handle("/contests", authMiddleware(ContestHandler)).Methods("GET")
+	s.Handle("/contests", authMiddleware(ContestHandler(&view))).Methods("GET")
 
 	headersOk := handlers.AllowedHeaders([]string{"X-Requested-With", "authorization"})
 	originsOk := handlers.AllowedOrigins([]string{"*"})
 	methodsOk := handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "OPTIONS"})
 	handler := handlers.LoggingHandler(os.Stdout, handlers.CORS(headersOk, originsOk, methodsOk)(r))
 
-	http.ListenAndServe(fmt.Sprintf(":%s", viewConfig.Port), handler)
+	http.ListenAndServe(fmt.Sprintf(":%s", view.Port), handler)
 }
 
 const ApiClientSecret string = "wBFPMoaFta4jWJLooXtkuuareC728R9X"
@@ -68,19 +71,15 @@ var StatusHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request
 	w.Write([]byte("API is up and running"))
 })
 
-type Contest struct {
-	Id   int
-	Name string
+func ContestHandler(view *View) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		if contests, err := view.Controller.GetAllContests(); err != nil {
+			log.Println("Something went wrong in ContestHandler:", err)
+			w.Write([]byte("[]"))
+		} else {
+			payload, _ := json.Marshal(contests)
+			w.Write([]byte(payload))
+		}
+	})
 }
-
-var contests = []Contest{
-	Contest{Id: 1, Name: "a"},
-	Contest{Id: 2, Name: "b"},
-}
-
-var ContestHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-	payload, _ := json.Marshal(contests)
-
-	w.Header().Set("Content-Type", "application/json")
-	w.Write([]byte(payload))
-})

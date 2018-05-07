@@ -1,27 +1,31 @@
 package daemon
 
 import (
-	"fmt"
 	"log"
 
-	"../db"
+	"../controller"
+	"../repository"
 	"../view"
 )
 
 type Config struct {
-	DbConfig   db.Config
-	ViewConfig view.Config
+	Port          string
+	ConnectString string
 }
 
 func Run(daemonConfig *Config) error {
-	dbConn, err := db.InitDb(daemonConfig.DbConfig)
-	if err != nil {
-		log.Printf("Error initializing database: %v\n", err)
+	postgreSQLRepo := repository.PostgreSQL{ConnectString: daemonConfig.ConnectString}
+
+	if err := postgreSQLRepo.Init(); err != nil {
+		log.Printf("Error initializing repository: %v\n", err)
 		return err
 	}
 
-	fmt.Println(dbConn)
-	view.Start(daemonConfig.ViewConfig)
+	var repo repository.Repository = &postgreSQLRepo
+	ctrl := controller.Controller{repo}
+
+	ui := view.View{daemonConfig.Port, &ctrl}
+	ui.Start()
 
 	return nil
 }

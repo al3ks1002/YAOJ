@@ -1,34 +1,30 @@
-import React, { Component } from 'react';
-
-import auth0 from 'auth0-js';
-
-import * as Constants from '../utils/auth0-constants.js'
-import {Jumbotron, Button} from 'react-bootstrap'
+import React, { Component } from "react";
 
 class Home extends Component {
-  constructor(props) {
-    super(props);
-    this.authenticate = this.authenticate.bind(this);
-  }
-
-  authenticate() {
-    this.webAuth = new auth0.WebAuth({
-      domain:       Constants.AUTH0_DOMAIN,
-      clientID:     Constants.AUTH0_CLIENT_ID,
-      scope:        'openid profile',
-      audience:     Constants.AUTH0_API_AUDIENCE,
-      responseType: 'token id_token',
-      redirectUri : Constants.AUTH0_CALLBACK_URL
-    });
-    this.webAuth.authorize();
+  getExpiryDate() {
+    const expiresAt = JSON.parse(localStorage.getItem("expires_at"));
+    return JSON.stringify(new Date(expiresAt));
   }
 
   render() {
+    const { isAuthenticated, login } = this.props.auth;
     return (
-      <Jumbotron className="col-xs-12 text-center">
-        <h1>Mlc</h1>
-        <Button bsStyle="primary" block onClick={this.authenticate}>Sign In</Button>
-      </Jumbotron>
+      <div className="container">
+        {isAuthenticated() && (
+          <div>
+            <h4>You are logged in!</h4>
+          </div>
+        )}
+        {!isAuthenticated() && (
+          <h4>
+            You are not logged in! Please{" "}
+            <a style={{ cursor: "pointer" }} onClick={login.bind(this)}>
+              Log In
+            </a>{" "}
+            to continue.
+          </h4>
+        )}
+      </div>
     );
   }
 }
