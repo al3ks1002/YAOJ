@@ -6,5 +6,6 @@ import (
 
 type Repository interface {
 	Init() error
-	GetAllContests() ([]model.Contest, error)
+	GetPublicContests() ([]model.Contest, error)
+	HandleLogin(*model.User) error
 }

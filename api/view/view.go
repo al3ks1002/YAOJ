@@ -13,6 +13,7 @@ import (
 	jose "gopkg.in/square/go-jose.v2"
 
 	"../controller"
+	"../model"
 )
 
 type View struct {
@@ -27,9 +28,10 @@ func (view View) Start() {
 
 	s := r.PathPrefix("/api").Subrouter()
 	s.Handle("/", StatusHandler).Methods("GET")
-	s.Handle("/contests", authMiddleware(ContestHandler(&view))).Methods("GET")
+	s.Handle("/login", authMiddleware(LoginHandler(&view))).Methods("POST")
+	s.Handle("/contests", PublicContestsHandler(&view)).Methods("GET")
 
-	headersOk := handlers.AllowedHeaders([]string{"X-Requested-With", "authorization"})
+	headersOk := handlers.AllowedHeaders([]string{"X-Requested-With", "Authorization", "X-Auth-Key", "X-Auth-Secret", "Content-Type"})
 	originsOk := handlers.AllowedOrigins([]string{"*"})
 	methodsOk := handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "OPTIONS"})
 	handler := handlers.LoggingHandler(os.Stdout, handlers.CORS(headersOk, originsOk, methodsOk)(r))
@@ -53,8 +55,8 @@ func authMiddleware(next http.Handler) http.Handler {
 		token, err := validator.ValidateRequest(r)
 
 		if err != nil {
-			fmt.Println(err)
-			fmt.Println("Token is not valid:", token)
+			log.Println(err)
+			log.Println("Token is not valid:", token)
 			w.WriteHeader(http.StatusUnauthorized)
 			w.Write([]byte("Unauthorized"))
 		} else {
@@ -71,15 +73,39 @@ var StatusHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request
 	w.Write([]byte("API is up and running"))
 })
 
-func ContestHandler(view *View) http.Handler {
+func PublicContestsHandler(view *View) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		if contests, err := view.Controller.GetAllContests(); err != nil {
-			log.Println("Something went wrong in ContestHandler:", err)
+		if contests, err := view.Controller.GetPublicContests(); err != nil {
+			log.Println(err)
 			w.Write([]byte("[]"))
 		} else {
 			payload, _ := json.Marshal(contests)
 			w.Write([]byte(payload))
+		}
+	})
+}
+
+type appHandler func(http.ResponseWriter, *http.Request) error
+
+func (fn appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if err := fn(w, r); err != nil {
+		http.Error(w, err.Error(), 500)
+	}
+}
+
+func LoginHandler(view *View) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		dec := json.NewDecoder(r.Body)
+		var user model.User
+		if err := dec.Decode(&user); err != nil {
+			log.Println(err)
+			http.Error(w, err.Error(), 500)
+		} else {
+			if err := view.Controller.HandleLogin(&user); err != nil {
+				log.Println(err)
+				http.Error(w, err.Error(), 500)
+			}
 		}
 	})
 }

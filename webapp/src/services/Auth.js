@@ -1,6 +1,7 @@
 import auth0 from "auth0-js";
 import history from "../utils/history";
 import * as Constants from "../utils/auth0-constants.js";
+import * as AxiosUtils from "../utils/axios.js";
 
 class Auth {
   userProfile;
@@ -21,6 +22,7 @@ class Auth {
     this.handleAuthentication = this.handleAuthentication.bind(this);
     this.isAuthenticated = this.isAuthenticated.bind(this);
     this.getAccessToken = this.getAccessToken.bind(this);
+
     this.scheduleRenewal();
   }
 
@@ -32,6 +34,9 @@ class Auth {
     this.auth0.parseHash((err, authResult) => {
       if (authResult && authResult.accessToken && authResult.idToken) {
         this.setSession(authResult);
+
+        AxiosUtils.setupAxios();
+        AxiosUtils.handleLogin();
       } else if (err) {
         history.replace("/home");
         console.log(err);

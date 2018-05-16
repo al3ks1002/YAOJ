@@ -59,12 +59,18 @@ func (db *PostgreSQL) createTablesIfNonExistant() error {
 	return nil
 }
 
-func (db *PostgreSQL) GetAllContests() ([]model.Contest, error) {
-	log.Println("PostgreSQL.GetAllContests() was called")
+func (db *PostgreSQL) GetPublicContests() ([]model.Contest, error) {
 	contests := []model.Contest{}
-	if err := db.dbConn.Select(&contests, "SELECT * FROM contests"); err != nil {
-		log.Println(err)
+	if err := db.dbConn.Select(&contests, "SELECT * FROM contests WHERE is_public = true"); err != nil {
 		return nil, err
 	}
 	return contests, nil
+}
+
+func (db *PostgreSQL) HandleLogin(user *model.User) error {
+	log.Println(user)
+	if _, err := db.dbConn.NamedExec("INSERT INTO users (id, name) VALUES (:id, :name) ON CONFLICT (id) DO UPDATE SET name = :name", user); err != nil {
+		return err
+	}
+	return nil
 }

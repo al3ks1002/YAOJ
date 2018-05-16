@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import { Navbar, Button } from "react-bootstrap";
-import axios from "axios";
 
 class App extends Component {
   constructor(props) {
@@ -9,26 +8,6 @@ class App extends Component {
     this.login = this.login.bind(this);
     this.logout = this.logout.bind(this);
     this.renewToken = this.renewToken.bind(this);
-
-    this.setupAxios();
-  }
-
-  // Add access_token if available with each XHR request to API
-  setupAxios() {
-    axios.interceptors.request.use(
-      function(config) {
-        const token = localStorage.getItem("access_token");
-
-        if (token != null) {
-          config.headers.Authorization = `Bearer ${token}`;
-        }
-
-        return config;
-      },
-      function(err) {
-        return Promise.reject(err);
-      }
-    );
   }
 
   goTo(route) {

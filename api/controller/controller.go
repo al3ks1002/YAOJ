@@ -1,8 +1,6 @@
 package controller
 
 import (
-	"log"
-
 	"../model"
 	"../repository"
 )
@@ -11,7 +9,10 @@ type Controller struct {
 	Repository repository.Repository
 }
 
-func (ctrl *Controller) GetAllContests() ([]model.Contest, error) {
-	log.Println("Controller.GetAllContests() was called")
-	return ctrl.Repository.GetAllContests()
+func (ctrl *Controller) GetPublicContests() ([]model.Contest, error) {
+	return ctrl.Repository.GetPublicContests()
+}
+
+func (ctrl *Controller) HandleLogin(user *model.User) error {
+	return ctrl.Repository.HandleLogin(user)
 }
