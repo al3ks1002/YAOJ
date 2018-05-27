@@ -30,6 +30,7 @@ func (view View) Start() {
 	s.Handle("/", StatusHandler).Methods("GET")
 	s.Handle("/login", authMiddleware(LoginHandler(&view))).Methods("POST")
 	s.Handle("/contests", PublicContestsHandler(&view)).Methods("GET")
+	s.Handle("/contests/{user-id}", authMiddleware(UserContestsHandler(&view))).Methods("GET")
 
 	headersOk := handlers.AllowedHeaders([]string{"X-Requested-With", "Authorization", "X-Auth-Key", "X-Auth-Secret", "Content-Type"})
 	originsOk := handlers.AllowedOrigins([]string{"*"})
@@ -78,7 +79,7 @@ func PublicContestsHandler(view *View) http.Handler {
 		w.Header().Set("Content-Type", "application/json")
 		if contests, err := view.Controller.GetPublicContests(); err != nil {
 			log.Println(err)
-			w.Write([]byte("[]"))
+			http.Error(w, err.Error(), 500)
 		} else {
 			payload, _ := json.Marshal(contests)
 			w.Write([]byte(payload))
@@ -86,14 +87,19 @@ func PublicContestsHandler(view *View) http.Handler {
 	})
 }
 
-type appHandler func(http.ResponseWriter, *http.Request) error
-
-func (fn appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if err := fn(w, r); err != nil {
-		http.Error(w, err.Error(), 500)
-	}
+func UserContestsHandler(view *View) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		vars := mux.Vars(r)
+		if contests, err := view.Controller.GetUserContests(vars["user-id"]); err != nil {
+			log.Println(err)
+			http.Error(w, err.Error(), 500)
+		} else {
+			payload, _ := json.Marshal(contests)
+			w.Write([]byte(payload))
+		}
+	})
 }
-
 func LoginHandler(view *View) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		dec := json.NewDecoder(r.Body)

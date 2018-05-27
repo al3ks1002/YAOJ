@@ -59,6 +59,14 @@ func (db *PostgreSQL) createTablesIfNonExistant() error {
 	return nil
 }
 
+func (db *PostgreSQL) HandleLogin(user *model.User) error {
+	log.Println(user)
+	if _, err := db.dbConn.NamedExec("INSERT INTO users (id, name) VALUES (:id, :name) ON CONFLICT (id) DO UPDATE SET name = :name", user); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (db *PostgreSQL) GetPublicContests() ([]model.Contest, error) {
 	contests := []model.Contest{}
 	if err := db.dbConn.Select(&contests, "SELECT * FROM contests WHERE is_public = true"); err != nil {
@@ -67,10 +75,10 @@ func (db *PostgreSQL) GetPublicContests() ([]model.Contest, error) {
 	return contests, nil
 }
 
-func (db *PostgreSQL) HandleLogin(user *model.User) error {
-	log.Println(user)
-	if _, err := db.dbConn.NamedExec("INSERT INTO users (id, name) VALUES (:id, :name) ON CONFLICT (id) DO UPDATE SET name = :name", user); err != nil {
-		return err
+func (db *PostgreSQL) GetUserContests(userId string) ([]model.Contest, error) {
+	contests := []model.Contest{}
+	if err := db.dbConn.Select(&contests, "SELECT * FROM contests WHERE owner_id = $1", userId); err != nil {
+		return nil, err
 	}
-	return nil
+	return contests, nil
 }

@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Navbar, Button } from "react-bootstrap";
+import { Navbar, Button, DropdownButton, MenuItem } from "react-bootstrap";
 
 class App extends Component {
   constructor(props) {
@@ -43,13 +43,19 @@ class App extends Component {
             >
               Home
             </Button>
-            <Button
+            <DropdownButton
+              title="Contests"
               bsStyle="primary"
               className="btn-margin"
-              onClick={this.goTo.bind(this, "contests")}
+              id={`dropdown-basic-contests`}
             >
-              Contests
-            </Button>
+              <MenuItem onClick={this.goTo.bind(this, "public-contests")}>
+                Public contests
+              </MenuItem>
+              <MenuItem onClick={this.goTo.bind(this, "my-contests")}>
+                My contests
+              </MenuItem>
+            </DropdownButton>
 
             {!isAuthenticated() && (
               <Button

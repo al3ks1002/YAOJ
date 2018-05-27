@@ -23,7 +23,14 @@ export const makeMainRoutes = () => {
       <div>
         <Route path="/" render={props => <App auth={auth} {...props} />} />
         <Route path="/home" render={props => <Home auth={auth} {...props} />} />
-        <Route path="/contests" render={props => <ContestList {...props} />} />
+        <Route
+          path="/public-contests"
+          render={props => <ContestList isPublic={true} {...props} />}
+        />
+          <Route
+            path="/my-contests"
+            render={props => <ContestList isPublic={false} {...props} />}
+          />
         <Route
           path="/profile"
           render={props =>

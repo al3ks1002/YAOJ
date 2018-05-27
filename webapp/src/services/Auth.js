@@ -34,13 +34,10 @@ class Auth {
     this.auth0.parseHash((err, authResult) => {
       if (authResult && authResult.accessToken && authResult.idToken) {
         this.setSession(authResult);
-
-        AxiosUtils.setupAxios();
         AxiosUtils.handleLogin();
       } else if (err) {
         history.replace("/home");
         console.log(err);
-        alert(`Error: ${err.error}. Check the console for further details.`);
       }
     });
   }
