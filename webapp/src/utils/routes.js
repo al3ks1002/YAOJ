@@ -1,13 +1,14 @@
 import React from "react";
 
 import { Redirect, Route, Router } from "react-router-dom";
-import App from "../components/App";
-import Home from "../components/Home";
-import Callback from "../components/Callback";
-import Profile from "../components/Profile";
-import ContestList from "../components/ContestList";
-import Auth from "../services/Auth";
-import history from "./history";
+import App from "../components/App.js";
+import Home from "../components/Home.js";
+import Callback from "../components/Callback.js";
+import Profile from "../components/Profile.js";
+import ContestList from "../components/ContestList.js";
+import NewContest from "../components/NewContest.js";
+import Auth from "../services/Auth.js";
+import history from "./history.js";
 
 const auth = new Auth();
 
@@ -27,10 +28,26 @@ export const makeMainRoutes = () => {
           path="/public-contests"
           render={props => <ContestList isPublic={true} {...props} />}
         />
-          <Route
-            path="/my-contests"
-            render={props => <ContestList isPublic={false} {...props} />}
-          />
+        <Route
+          path="/new-contest"
+          render={props =>
+            !auth.isAuthenticated() ? (
+              <Redirect to="/home" />
+            ) : (
+              <NewContest {...props} />
+            )
+          }
+        />
+        <Route
+          path="/my-contests"
+          render={props =>
+            !auth.isAuthenticated() ? (
+              <Redirect to="/home" />
+            ) : (
+              <ContestList isPublic={false} {...props} />
+            )
+          }
+        />
         <Route
           path="/profile"
           render={props =>

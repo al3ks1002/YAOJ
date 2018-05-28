@@ -1,12 +1,13 @@
 import axios from "axios";
+import * as LocalStorageUtils from "../utils/localStorage.js";
 
 const ApiUrl = "http://localhost:8080/api/";
 
 function setupAuthorizationHeader() {
-  const token = localStorage.getItem("access_token");
-  if (token) {
+  try {
+    const token = LocalStorageUtils.getAccessToken();
     axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-  }
+  } catch (error) {}
 }
 
 export function getContests(isPublic) {
@@ -14,12 +15,12 @@ export function getContests(isPublic) {
 
   var apiGetUrl = ApiUrl + "contests";
   if (!isPublic) {
-    const profile = JSON.parse(localStorage.getItem("profile"));
-    if (!profile) {
-      throw new Error("No user found!");
+    try {
+      const userId = LocalStorageUtils.getUserId();
+      apiGetUrl += "/" + userId;
+    } catch (error) {
+      throw error;
     }
-    const userId = profile["sub"];
-    apiGetUrl += "/" + userId;
   }
   return axios.get(apiGetUrl);
 }
@@ -27,14 +28,33 @@ export function getContests(isPublic) {
 export function handleLogin() {
   setupAuthorizationHeader();
 
-  const profile = JSON.parse(localStorage.getItem("profile"));
-  axios
-    .post(ApiUrl + "login", {
-      id: profile["sub"],
-      name: profile["name"]
-    })
-    .then(response => {})
-    .catch(error => {
-      console.log(error.response);
+  try {
+    const userId = LocalStorageUtils.getUserId();
+    const username = LocalStorageUtils.getUsername();
+    axios
+      .post(ApiUrl + "login", {
+        id: userId,
+        name: username
+      })
+      .then(response => {})
+      .catch(error => {
+        console.log(error.response);
+      });
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export function addContest(isPublic, contestName) {
+  setupAuthorizationHeader();
+  try {
+    const userId = LocalStorageUtils.getUserId();
+    return axios.post(ApiUrl + "new-contest", {
+      ownerid: userId,
+      name: contestName,
+      isPublic: isPublic
     });
+  } catch (error) {
+    throw error;
+  }
 }

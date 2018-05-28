@@ -1,6 +1,8 @@
 import React, { Component } from "react";
 import Contest from "./Contest.js";
 
+import { Table } from "react-bootstrap";
+
 import loading from "../assets/loading.svg";
 import Styles from "../utils/styles.js";
 import * as AxiosUtils from "../utils/axios.js";
@@ -13,7 +15,7 @@ class ContestList extends Component {
       isPublic: this.props.isPublic,
       contests: [],
       loaded: false,
-      error: null
+      error: ""
     };
   }
 
@@ -30,35 +32,49 @@ class ContestList extends Component {
         .catch(error => {
           this.setState({
             loaded: true,
-            error: error
+            error: error.toString()
           });
-          console.log(error);
+          console.log(error.toString());
         });
     } catch (error) {
       this.setState({
         loaded: true,
-        error: error
+        error: error.toString()
       });
-      console.log(error);
+      console.log(error.toString());
     }
   }
 
   render() {
     if (this.state.error) {
-      return <div>{this.state.error.toString()}</div>;
+      return <div>{this.state.error}</div>;
     }
     if (this.state.loaded) {
       if (this.state.contests.length === 0) {
         return <div>There are no contests at the moment.</div>;
       }
       return (
-        <table>
+        <Table striped bordered condensed hover>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Name</th>
+              <th>Owner Id</th>
+            </tr>
+          </thead>
           <tbody>
             {this.state.contests.map(function(contest, i) {
-              return <Contest key={i} id={contest.Id} name={contest.Name} />;
+              return (
+                <Contest
+                  key={i}
+                  id={contest.Id}
+                  name={contest.Name}
+                  ownerId={contest.OwnerId}
+                />
+              );
             })}
           </tbody>
-        </table>
+        </Table>
       );
     }
     return (

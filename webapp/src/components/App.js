@@ -52,9 +52,16 @@ class App extends Component {
               <MenuItem onClick={this.goTo.bind(this, "public-contests")}>
                 Public contests
               </MenuItem>
-              <MenuItem onClick={this.goTo.bind(this, "my-contests")}>
-                My contests
-              </MenuItem>
+              {isAuthenticated() && (
+                <MenuItem onClick={this.goTo.bind(this, "new-contest")}>
+                  New contest
+                </MenuItem>
+              )}
+              {isAuthenticated() && (
+                <MenuItem onClick={this.goTo.bind(this, "my-contests")}>
+                  My contests
+                </MenuItem>
+              )}
             </DropdownButton>
 
             {!isAuthenticated() && (

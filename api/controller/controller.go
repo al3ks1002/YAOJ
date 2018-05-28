@@ -20,3 +20,7 @@ func (ctrl *Controller) GetUserContests(userId string) ([]model.Contest, error) 
 func (ctrl *Controller) HandleLogin(user *model.User) error {
 	return ctrl.Repository.HandleLogin(user)
 }
+
+func (ctrl *Controller) AddNewContest(contest *model.Contest) error {
+	return ctrl.Repository.AddNewContest(contest)
+}

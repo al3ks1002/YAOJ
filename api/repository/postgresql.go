@@ -82,3 +82,12 @@ func (db *PostgreSQL) GetUserContests(userId string) ([]model.Contest, error) {
 	}
 	return contests, nil
 }
+
+func (db *PostgreSQL) AddNewContest(contest *model.Contest) error {
+	log.Println(contest)
+	if _, err := db.dbConn.NamedExec("INSERT INTO contests (owner_id, name, is_public) VALUES (:owner_id, :name, :is_public)", contest); err != nil {
+		return err
+	}
+	return nil
+	return nil
+}

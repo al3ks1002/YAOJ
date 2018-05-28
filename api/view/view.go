@@ -31,6 +31,7 @@ func (view View) Start() {
 	s.Handle("/login", authMiddleware(LoginHandler(&view))).Methods("POST")
 	s.Handle("/contests", PublicContestsHandler(&view)).Methods("GET")
 	s.Handle("/contests/{user-id}", authMiddleware(UserContestsHandler(&view))).Methods("GET")
+	s.Handle("/new-contest", authMiddleware(NewContestHandler(&view))).Methods("POST")
 
 	headersOk := handlers.AllowedHeaders([]string{"X-Requested-With", "Authorization", "X-Auth-Key", "X-Auth-Secret", "Content-Type"})
 	originsOk := handlers.AllowedOrigins([]string{"*"})
@@ -100,6 +101,7 @@ func UserContestsHandler(view *View) http.Handler {
 		}
 	})
 }
+
 func LoginHandler(view *View) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		dec := json.NewDecoder(r.Body)
@@ -109,6 +111,22 @@ func LoginHandler(view *View) http.Handler {
 			http.Error(w, err.Error(), 500)
 		} else {
 			if err := view.Controller.HandleLogin(&user); err != nil {
+				log.Println(err)
+				http.Error(w, err.Error(), 500)
+			}
+		}
+	})
+}
+
+func NewContestHandler(view *View) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		dec := json.NewDecoder(r.Body)
+		var contest model.Contest
+		if err := dec.Decode(&contest); err != nil {
+			log.Println(err)
+			http.Error(w, err.Error(), 500)
+		} else {
+			if err := view.Controller.AddNewContest(&contest); err != nil {
 				log.Println(err)
 				http.Error(w, err.Error(), 500)
 			}

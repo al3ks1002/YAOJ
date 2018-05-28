@@ -6,6 +6,7 @@ class Contest extends Component {
       <tr>
         <td> {this.props.id} </td>
         <td> {this.props.name} </td>
+        <td> {this.props.ownerId} </td>
       </tr>
     );
   }

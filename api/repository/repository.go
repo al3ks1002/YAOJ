@@ -9,4 +9,5 @@ type Repository interface {
 	HandleLogin(*model.User) error
 	GetPublicContests() ([]model.Contest, error)
 	GetUserContests(userId string) ([]model.Contest, error)
+	AddNewContest(*model.Contest) error
 }
