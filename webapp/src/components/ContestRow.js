@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 
-class Contest extends Component {
+class ContestRow extends Component {
   render() {
     return (
       <tr>
@@ -12,4 +12,4 @@ class Contest extends Component {
   }
 }
 
-export default Contest;
+export default ContestRow;

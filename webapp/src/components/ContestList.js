@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import Contest from "./Contest.js";
+import ContestRow from "./ContestRow.js";
 
 import { Table } from "react-bootstrap";
 
@@ -65,7 +65,7 @@ class ContestList extends Component {
           <tbody>
             {this.state.contests.map(function(contest, i) {
               return (
-                <Contest
+                <ContestRow
                   key={i}
                   id={contest.Id}
                   name={contest.Name}

@@ -32,11 +32,14 @@ class Auth {
   handleAuthentication() {
     this.auth0.parseHash((err, authResult) => {
       if (authResult && authResult.accessToken && authResult.idToken) {
-        this.setSession(authResult);
         try {
-          AxiosUtils.handleLogin();
+          this.setSession(authResult);
+          AxiosUtils.handleLogin().catch(error => {
+            this.logout();
+            console.log(error);
+          });
         } catch (error) {
-          console.log("This should have not happened: ", error);
+          console.log(error);
         }
       } else if (err) {
         history.replace("/home");

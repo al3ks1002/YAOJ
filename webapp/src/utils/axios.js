@@ -31,17 +31,12 @@ export function handleLogin() {
   try {
     const userId = LocalStorageUtils.getUserId();
     const username = LocalStorageUtils.getUsername();
-    axios
-      .post(ApiUrl + "login", {
-        id: userId,
-        name: username
-      })
-      .then(response => {})
-      .catch(error => {
-        console.log(error.response);
-      });
+    return axios.post(ApiUrl + "login", {
+      id: userId,
+      name: username
+    });
   } catch (error) {
-    console.log(error);
+    throw error;
   }
 }
 
