@@ -7,6 +7,9 @@ class ContestRow extends Component {
         <td> {this.props.id} </td>
         <td> {this.props.name} </td>
         <td> {this.props.ownerId} </td>
+        <td>
+          <a href={"/contest/" + this.props.id}>Go to</a>
+        </td>
       </tr>
     );
   }

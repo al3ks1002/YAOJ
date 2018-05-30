@@ -1,10 +1,12 @@
 import React, { Component } from "react";
 import { Panel, ControlLabel, Glyphicon } from "react-bootstrap";
 
+import * as LocalStorageUtils from "../utils/localStorage.js";
+
 class Profile extends Component {
   componentWillMount() {
     this.setState({
-      profile: JSON.parse(localStorage.getItem("profile"))
+      profile: LocalStorageUtils.getProfile()
     });
   }
   render() {

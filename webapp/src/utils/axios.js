@@ -7,7 +7,9 @@ function setupAuthorizationHeader() {
   try {
     const token = LocalStorageUtils.getAccessToken();
     axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-  } catch (error) {}
+  } catch (error) {
+    // There is no need to throw/log anything.
+  }
 }
 
 export function getContests(isPublic) {

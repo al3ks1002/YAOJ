@@ -6,27 +6,34 @@ import Home from "../components/Home.js";
 import Callback from "../components/Callback.js";
 import Profile from "../components/Profile.js";
 import ContestList from "../components/ContestList.js";
+import ErrorBoundary from "../components/ErrorBoundary.js";
 import NewContest from "../components/NewContest.js";
+import Contest from "../components/Contest.js";
 import Auth from "../services/Auth.js";
 import history from "./history.js";
 
 const auth = new Auth();
-
-const handleAuthentication = ({ location }) => {
-  if (/access_token|id_token|error/.test(location.hash)) {
-    auth.handleAuthentication();
-  }
-};
 
 export const makeMainRoutes = () => {
   return (
     <Router history={history}>
       <div>
         <Route path="/" render={props => <App auth={auth} {...props} />} />
-        <Route path="/home" render={props => <Home auth={auth} {...props} />} />
+        <Route
+          path="/home"
+          render={props => (
+            <ErrorBoundary>
+              <Home auth={auth} {...props} />
+            </ErrorBoundary>
+          )}
+        />
         <Route
           path="/public-contests"
-          render={props => <ContestList isPublic={true} {...props} />}
+          render={props => (
+            <ErrorBoundary>
+              <ContestList isPublic={true} {...props} />
+            </ErrorBoundary>
+          )}
         />
         <Route
           path="/new-contest"
@@ -34,7 +41,9 @@ export const makeMainRoutes = () => {
             !auth.isAuthenticated() ? (
               <Redirect to="/home" />
             ) : (
-              <NewContest {...props} />
+              <ErrorBoundary>
+                <NewContest {...props} />
+              </ErrorBoundary>
             )
           }
         />
@@ -44,25 +53,33 @@ export const makeMainRoutes = () => {
             !auth.isAuthenticated() ? (
               <Redirect to="/home" />
             ) : (
-              <ContestList isPublic={false} {...props} />
+              <ErrorBoundary>
+                <ContestList isPublic={false} {...props} />
+              </ErrorBoundary>
             )
           }
         />
+        <Route path="/contest/:id" render={props => <Contest {...props} />} />
         <Route
           path="/profile"
           render={props =>
             !auth.isAuthenticated() ? (
               <Redirect to="/home" />
             ) : (
-              <Profile auth={auth} {...props} />
+              <ErrorBoundary>
+                <Profile auth={auth} {...props} />
+              </ErrorBoundary>
             )
           }
         />
         <Route
           path="/callback"
           render={props => {
-            handleAuthentication(props);
-            return <Callback {...props} />;
+            return (
+              <ErrorBoundary>
+                <Callback auth={auth} {...props} />
+              </ErrorBoundary>
+            );
           }}
         />
       </div>

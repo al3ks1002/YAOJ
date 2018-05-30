@@ -18,7 +18,7 @@ class NewContest extends Component {
     this.state = {
       isPublic: false,
       contestName: "",
-      error: ""
+      error: null
     };
 
     this.handleContestNameChange = this.handleContestNameChange.bind(this);
@@ -59,14 +59,18 @@ class NewContest extends Component {
           history.push("/my-contests");
         })
         .catch(error => {
-          this.setState({ error: error.toString() });
+          this.setState({ error: error });
         });
     } catch (error) {
-      this.setState({ error: error.toString() });
+      this.setState({ error: error });
     }
   }
 
   render() {
+    if (this.state.error) {
+      throw this.state.error;
+    }
+
     return (
       <form style={{ width: 500 }} onSubmit={this.handleSubmit.bind(this)}>
         <FormGroup controlId="formCheckbox">
@@ -88,9 +92,6 @@ class NewContest extends Component {
           </HelpBlock>
         </FormGroup>
         <Button type="submit">Submit</Button>
-        <br />
-        <br />
-        {this.state.error && <Well>{this.state.error}</Well>}
       </form>
     );
   }

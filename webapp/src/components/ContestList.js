@@ -15,40 +15,31 @@ class ContestList extends Component {
       isPublic: this.props.isPublic,
       contests: [],
       loaded: false,
-      error: ""
+      error: null
     };
   }
 
-  // Once this components mounts, we will make a call to the API to get the product data
+  // Once this components mounts, we will make a call to the API to get the contest data
   componentDidMount() {
-    try {
-      AxiosUtils.getContests(this.state.isPublic)
-        .then(result => {
-          this.setState({
-            contests: result.data,
-            loaded: true
-          });
-        })
-        .catch(error => {
-          this.setState({
-            loaded: true,
-            error: error.toString()
-          });
-          console.log(error.toString());
+    AxiosUtils.getContests(this.state.isPublic)
+      .then(result => {
+        this.setState({
+          contests: result.data,
+          loaded: true
         });
-    } catch (error) {
-      this.setState({
-        loaded: true,
-        error: error.toString()
+      })
+      .catch(error => {
+        this.setState({
+          error: error
+        });
       });
-      console.log(error.toString());
-    }
   }
 
   render() {
     if (this.state.error) {
-      return <div>{this.state.error}</div>;
+      throw this.state.error;
     }
+
     if (this.state.loaded) {
       if (this.state.contests.length === 0) {
         return <div>There are no contests at the moment.</div>;
@@ -60,6 +51,7 @@ class ContestList extends Component {
               <th>#</th>
               <th>Name</th>
               <th>Owner Id</th>
+              <th>Link</th>
             </tr>
           </thead>
           <tbody>

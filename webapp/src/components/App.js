@@ -19,7 +19,7 @@ class App extends Component {
   }
 
   logout() {
-    this.props.auth.logout();
+    this.props.auth.logout(true);
   }
 
   renewToken() {

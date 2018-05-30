@@ -1,7 +1,7 @@
 import auth0 from "auth0-js";
-import history from "../utils/history";
 import * as Constants from "../utils/auth0-constants.js";
 import * as AxiosUtils from "../utils/axios.js";
+import history from "../utils/history";
 
 class Auth {
   userProfile;
@@ -30,21 +30,25 @@ class Auth {
   }
 
   handleAuthentication() {
-    this.auth0.parseHash((err, authResult) => {
-      if (authResult && authResult.accessToken && authResult.idToken) {
-        try {
-          this.setSession(authResult);
-          AxiosUtils.handleLogin().catch(error => {
-            this.logout();
-            console.log(error);
-          });
-        } catch (error) {
-          console.log(error);
+    return new Promise((resolve, reject) => {
+      this.auth0.parseHash((error, authResult) => {
+        if (authResult && authResult.accessToken && authResult.idToken) {
+          try {
+            this.setSession(authResult);
+            AxiosUtils.handleLogin()
+              .then(() => {
+                resolve();
+              })
+              .catch(error => {
+                reject(error);
+              });
+          } catch (error) {
+            reject(error);
+          }
+        } else if (error) {
+          reject(error);
         }
-      } else if (err) {
-        history.replace("/home");
-        console.log(err);
-      }
+      });
     });
   }
 
@@ -61,12 +65,9 @@ class Auth {
 
     // schedule a token renewal
     this.scheduleRenewal();
-
-    // navigate to the home route
-    history.replace("/home");
   }
 
-  logout() {
+  logout(withRedirect) {
     // Clear access token and ID token from local storage
     localStorage.removeItem("access_token");
     localStorage.removeItem("id_token");
@@ -75,8 +76,10 @@ class Auth {
     localStorage.removeItem("scopes");
     this.userProfile = null;
     clearTimeout(this.tokenRenewalTimeout);
-    // navigate to the home route
-    history.replace("/home");
+
+    if (withRedirect) {
+      history.replace("/home");
+    }
   }
 
   isAuthenticated() {
