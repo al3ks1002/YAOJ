@@ -13,17 +13,22 @@ function setupAuthorizationHeader() {
 }
 
 export function getContests(isPublic) {
-  setupAuthorizationHeader();
-
   var apiGetUrl = ApiUrl + "contests";
   if (!isPublic) {
     try {
+      setupAuthorizationHeader();
       const userId = LocalStorageUtils.getUserId();
       apiGetUrl += "/" + userId;
     } catch (error) {
       throw error;
     }
   }
+  return axios.get(apiGetUrl);
+}
+
+export function getContest(id) {
+  setupAuthorizationHeader();
+  var apiGetUrl = ApiUrl + "contest/" + id;
   return axios.get(apiGetUrl);
 }
 

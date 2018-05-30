@@ -59,7 +59,14 @@ export const makeMainRoutes = () => {
             )
           }
         />
-        <Route path="/contest/:id" render={props => <Contest {...props} />} />
+        <Route
+          path="/contest/:id"
+          render={props => (
+            <ErrorBoundary>
+              <Contest {...props} />
+            </ErrorBoundary>
+          )}
+        />
         <Route
           path="/profile"
           render={props =>

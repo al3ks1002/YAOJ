@@ -2,7 +2,6 @@ import React, { Component } from "react";
 import {
   FormGroup,
   Button,
-  Well,
   Checkbox,
   FormControl,
   HelpBlock

@@ -89,5 +89,12 @@ func (db *PostgreSQL) AddNewContest(contest *model.Contest) error {
 		return err
 	}
 	return nil
-	return nil
+}
+
+func (db *PostgreSQL) GetContestWithId(id string) (*model.Contest, error) {
+	contest := &model.Contest{}
+	if err := db.dbConn.Get(contest, "SELECT * FROM contests WHERE id = $1", id); err != nil {
+		return nil, err
+	}
+	return contest, nil
 }

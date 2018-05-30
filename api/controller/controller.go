@@ -24,3 +24,7 @@ func (ctrl *Controller) HandleLogin(user *model.User) error {
 func (ctrl *Controller) AddNewContest(contest *model.Contest) error {
 	return ctrl.Repository.AddNewContest(contest)
 }
+
+func (ctrl *Controller) GetContestWithId(id string) (*model.Contest, error) {
+	return ctrl.Repository.GetContestWithId(id)
+}

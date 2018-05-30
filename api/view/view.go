@@ -32,6 +32,7 @@ func (view View) Start() {
 	s.Handle("/contests", PublicContestsHandler(&view)).Methods("GET")
 	s.Handle("/contests/{user-id}", authMiddleware(UserContestsHandler(&view))).Methods("GET")
 	s.Handle("/new-contest", authMiddleware(NewContestHandler(&view))).Methods("POST")
+	s.Handle("/contest/{contest-id}", ContestHandler(&view)).Methods("GET")
 
 	headersOk := handlers.AllowedHeaders([]string{"X-Requested-With", "Authorization", "X-Auth-Key", "X-Auth-Secret", "Content-Type"})
 	originsOk := handlers.AllowedOrigins([]string{"*"})
@@ -130,6 +131,20 @@ func NewContestHandler(view *View) http.Handler {
 				log.Println(err)
 				http.Error(w, err.Error(), 500)
 			}
+		}
+	})
+}
+
+func ContestHandler(view *View) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		vars := mux.Vars(r)
+		if contest, err := view.Controller.GetContestWithId(vars["contest-id"]); err != nil {
+			log.Println(err)
+			http.Error(w, err.Error(), 500)
+		} else {
+			payload, _ := json.Marshal(contest)
+			w.Write([]byte(payload))
 		}
 	})
 }

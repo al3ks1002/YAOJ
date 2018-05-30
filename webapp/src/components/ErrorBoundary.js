@@ -24,7 +24,7 @@ class ErrorBoundary extends Component {
       // Error path
       return (
         <Alert style={{ width: 500 }} bsStyle="danger">
-          <text>Something went wrong.</text>
+          Something went wrong.
           <br />
           <details style={{ whiteSpace: "pre-wrap" }}>
             {this.state.error && this.state.error.toString()}

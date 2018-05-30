@@ -10,4 +10,5 @@ type Repository interface {
 	GetPublicContests() ([]model.Contest, error)
 	GetUserContests(userId string) ([]model.Contest, error)
 	AddNewContest(*model.Contest) error
+	GetContestWithId(string) (*model.Contest, error)
 }

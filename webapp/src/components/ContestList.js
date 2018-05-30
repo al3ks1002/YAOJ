@@ -69,6 +69,7 @@ class ContestList extends Component {
         </Table>
       );
     }
+
     return (
       <div className="container">
         <div style={Styles.loadingStyle}>
