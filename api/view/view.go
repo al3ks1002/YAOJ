@@ -141,8 +141,19 @@ func NewContestHandler(view *View) http.Handler {
 func ContestHandler(view *View) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
+
+		userId := r.URL.Query().Get("userId")
 		vars := mux.Vars(r)
-		if contest, err := view.Controller.GetContestWithId(vars["contest-id"]); err != nil {
+		contestId := vars["contest-id"]
+
+		if !view.Controller.IsPublic(contestId) && !view.Controller.IsMyContest(userId, contestId) {
+			err := "Not an owner of the contest"
+			log.Println(err)
+			http.Error(w, err, 403)
+			return
+		}
+
+		if contest, err := view.Controller.GetContestWithId(contestId); err != nil {
 			log.Println(err)
 			http.Error(w, err.Error(), 500)
 		} else {
@@ -156,8 +167,8 @@ func ProblemsHandler(view *View) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 
-		vars := mux.Vars(r)
 		userId := r.URL.Query().Get("userId")
+		vars := mux.Vars(r)
 		contestId := vars["contest-id"]
 		if !view.Controller.IsPublic(contestId) && !view.Controller.IsMyContest(userId, contestId) {
 			err := "Not an owner of the contest"
@@ -237,11 +248,24 @@ func NewProblemHandler(view *View) http.Handler {
 func ProblemHandler(view *View) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
+
 		vars := mux.Vars(r)
-		if problem, err := view.Controller.GetProblemWithId(vars["problem-id"]); err != nil {
+		problemId := vars["problem-id"]
+
+		if problem, err := view.Controller.GetProblemWithId(problemId); err != nil {
 			log.Println(err)
 			http.Error(w, err.Error(), 500)
 		} else {
+			userId := r.URL.Query().Get("userId")
+			contestId := problem.ContestId
+
+			if !view.Controller.IsPublic(contestId) && !view.Controller.IsMyContest(userId, contestId) {
+				err := "Not an owner of the problem"
+				log.Println(err)
+				http.Error(w, err, 403)
+				return
+			}
+
 			payload, _ := json.Marshal(problem)
 			w.Write([]byte(payload))
 		}

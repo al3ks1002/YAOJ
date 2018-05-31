@@ -50,14 +50,9 @@ func (ctrl *Controller) IsPublic(contestId string) bool {
 }
 
 func (ctrl *Controller) IsMyContest(userId string, contestId string) bool {
-	if userContests, err := ctrl.Repository.GetUserContests(userId); err != nil {
+	if contest, err := ctrl.GetContestWithId(contestId); err != nil {
 		return false
 	} else {
-		for _, contest := range userContests {
-			if contest.OwnerId == userId {
-				return true
-			}
-		}
-		return false
+		return contest.OwnerId == userId
 	}
 }

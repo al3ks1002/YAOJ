@@ -28,8 +28,16 @@ export function getContests(isPublic) {
 
 export function getContest(id) {
   setupAuthorizationHeader();
+  var userId = "";
+  try {
+    userId = LocalStorageUtils.getUserId();
+  } catch (error) {}
   var apiGetUrl = ApiUrl + "contest/" + id;
-  return axios.get(apiGetUrl);
+  return axios.get(apiGetUrl, {
+    params: {
+      userId: userId
+    }
+  });
 }
 
 export function handleLogin() {
@@ -95,6 +103,14 @@ export function addProblem(contestId, problemName, problemDescription) {
 
 export function getProblem(id) {
   setupAuthorizationHeader();
+  var userId = "";
+  try {
+    userId = LocalStorageUtils.getUserId();
+  } catch (error) {}
   var apiGetUrl = ApiUrl + "problem/" + id;
-  return axios.get(apiGetUrl);
+  return axios.get(apiGetUrl, {
+    params: {
+      userId: userId
+    }
+  });
 }

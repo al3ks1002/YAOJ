@@ -20,7 +20,12 @@ class Problem extends Component {
   }
 
   isMyContest(contest) {
-    return LocalStorageUtils.getUserId() === contest.OwnerId;
+    try {
+      const userId = LocalStorageUtils.getUserId();
+      return userId === contest.OwnerId;
+    } catch (error) {
+      return false;
+    }
   }
 
   componentDidMount() {
