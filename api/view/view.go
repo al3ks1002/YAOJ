@@ -27,6 +27,7 @@ func (view View) Start() {
 	r := mux.NewRouter()
 
 	s := r.PathPrefix("/api").Subrouter()
+
 	s.Handle("/", StatusHandler).Methods("GET")
 	s.Handle("/login", authMiddleware(LoginHandler(&view))).Methods("POST")
 	s.Handle("/contests", PublicContestsHandler(&view)).Methods("GET")
@@ -79,33 +80,6 @@ var StatusHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request
 	w.Write([]byte("API is up and running"))
 })
 
-func PublicContestsHandler(view *View) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		if contests, err := view.Controller.GetPublicContests(); err != nil {
-			log.Println(err)
-			http.Error(w, err.Error(), 500)
-		} else {
-			payload, _ := json.Marshal(contests)
-			w.Write([]byte(payload))
-		}
-	})
-}
-
-func UserContestsHandler(view *View) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		vars := mux.Vars(r)
-		if contests, err := view.Controller.GetUserContests(vars["user-id"]); err != nil {
-			log.Println(err)
-			http.Error(w, err.Error(), 500)
-		} else {
-			payload, _ := json.Marshal(contests)
-			w.Write([]byte(payload))
-		}
-	})
-}
-
 func LoginHandler(view *View) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		dec := json.NewDecoder(r.Body)
@@ -122,10 +96,42 @@ func LoginHandler(view *View) http.Handler {
 	})
 }
 
+func PublicContestsHandler(view *View) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+
+		if contests, err := view.Controller.GetPublicContests(); err != nil {
+			log.Println(err)
+			http.Error(w, err.Error(), 500)
+		} else {
+			payload, _ := json.Marshal(contests)
+			w.Write([]byte(payload))
+		}
+	})
+}
+
+func UserContestsHandler(view *View) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+
+		vars := mux.Vars(r)
+		userId := vars["user-id"]
+
+		if contests, err := view.Controller.GetUserContests(userId); err != nil {
+			log.Println(err)
+			http.Error(w, err.Error(), 500)
+		} else {
+			payload, _ := json.Marshal(contests)
+			w.Write([]byte(payload))
+		}
+	})
+}
+
 func NewContestHandler(view *View) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		dec := json.NewDecoder(r.Body)
 		var contest model.Contest
+
 		if err := dec.Decode(&contest); err != nil {
 			log.Println(err)
 			http.Error(w, err.Error(), 500)
@@ -170,6 +176,7 @@ func ProblemsHandler(view *View) http.Handler {
 		userId := r.URL.Query().Get("userId")
 		vars := mux.Vars(r)
 		contestId := vars["contest-id"]
+
 		if !view.Controller.IsPublic(contestId) && !view.Controller.IsMyContest(userId, contestId) {
 			err := "Not an owner of the contest"
 			log.Println(err)
@@ -190,6 +197,7 @@ func NewProblemHandler(view *View) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		dec := json.NewDecoder(r.Body)
 		var requestInterface interface{}
+
 		if err := dec.Decode(&requestInterface); err != nil {
 			log.Println(err)
 			http.Error(w, err.Error(), 500)

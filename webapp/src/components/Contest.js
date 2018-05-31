@@ -78,7 +78,6 @@ class Contest extends Component {
         <div>
           <Panel>
             <Panel.Heading>{this.state.contest.Name}</Panel.Heading>
-            <Panel.Body>Info about the contest here..</Panel.Body>
           </Panel>
           <br />
           <ProblemList contestId={this.state.id} />
