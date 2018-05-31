@@ -11,4 +11,7 @@ type Repository interface {
 	GetUserContests(userId string) ([]model.Contest, error)
 	AddNewContest(*model.Contest) error
 	GetContestWithId(string) (*model.Contest, error)
+	GetProblemsFromContest(string) ([]model.Problem, error)
+	AddNewProblem(*model.Problem) error
+	GetProblemWithId(string) (*model.Problem, error)
 }

@@ -48,7 +48,8 @@ var schema = `
 	CREATE TABLE IF NOT EXISTS problems (
 		id SERIAL NOT NULL PRIMARY KEY,
 		contest_id TEXT NOT NULL,
-		name TEXT NOT NULL
+		name TEXT NOT NULL,
+		description TEXT NOT NULL
 	);
 `
 
@@ -84,7 +85,6 @@ func (db *PostgreSQL) GetUserContests(userId string) ([]model.Contest, error) {
 }
 
 func (db *PostgreSQL) AddNewContest(contest *model.Contest) error {
-	log.Println(contest)
 	if _, err := db.dbConn.NamedExec("INSERT INTO contests (owner_id, name, is_public) VALUES (:owner_id, :name, :is_public)", contest); err != nil {
 		return err
 	}
@@ -97,4 +97,27 @@ func (db *PostgreSQL) GetContestWithId(id string) (*model.Contest, error) {
 		return nil, err
 	}
 	return contest, nil
+}
+
+func (db *PostgreSQL) AddNewProblem(problem *model.Problem) error {
+	if _, err := db.dbConn.NamedExec("INSERT INTO problems (contest_id, name, description) VALUES (:contest_id, :name, :description)", problem); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (db *PostgreSQL) GetProblemsFromContest(contestId string) ([]model.Problem, error) {
+	problems := []model.Problem{}
+	if err := db.dbConn.Select(&problems, "SELECT * FROM problems WHERE contest_id = $1", contestId); err != nil {
+		return nil, err
+	}
+	return problems, nil
+}
+
+func (db *PostgreSQL) GetProblemWithId(id string) (*model.Problem, error) {
+	problem := &model.Problem{}
+	if err := db.dbConn.Get(problem, "SELECT * FROM problems WHERE id = $1", id); err != nil {
+		return nil, err
+	}
+	return problem, nil
 }

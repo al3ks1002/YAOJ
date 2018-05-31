@@ -8,7 +8,9 @@ import Profile from "../components/Profile.js";
 import ContestList from "../components/ContestList.js";
 import ErrorBoundary from "../components/ErrorBoundary.js";
 import NewContest from "../components/NewContest.js";
+import NewProblem from "../components/NewProblem.js";
 import Contest from "../components/Contest.js";
+import Problem from "../components/Problem.js";
 import Auth from "../services/Auth.js";
 import history from "./history.js";
 
@@ -68,6 +70,15 @@ export const makeMainRoutes = () => {
           )}
         />
         <Route
+          path="/problem/:id"
+          render={props => (
+            <ErrorBoundary>
+              <Problem {...props} />
+            </ErrorBoundary>
+          )}
+        />
+
+        <Route
           path="/profile"
           render={props =>
             !auth.isAuthenticated() ? (
@@ -88,6 +99,18 @@ export const makeMainRoutes = () => {
               </ErrorBoundary>
             );
           }}
+        />
+        <Route
+          path="/new-problem/:contestId"
+          render={props =>
+            !auth.isAuthenticated() ? (
+              <Redirect to="/home" />
+            ) : (
+              <ErrorBoundary>
+                <NewProblem {...props} />
+              </ErrorBoundary>
+            )
+          }
         />
       </div>
     </Router>

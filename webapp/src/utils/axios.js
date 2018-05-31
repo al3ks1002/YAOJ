@@ -60,3 +60,41 @@ export function addContest(isPublic, contestName) {
     throw error;
   }
 }
+
+export function getProblems(contestId) {
+  setupAuthorizationHeader();
+  try {
+    var userId = "";
+    try {
+      userId = LocalStorageUtils.getUserId();
+    } catch (error) {}
+    var apiGetUrl = ApiUrl + "problems/" + contestId;
+    return axios.get(apiGetUrl, {
+      params: {
+        userId: userId
+      }
+    });
+  } catch (error) {
+    throw error;
+  }
+}
+
+export function addProblem(contestId, problemName, problemDescription) {
+  setupAuthorizationHeader();
+  try {
+    const userId = LocalStorageUtils.getUserId();
+    return axios.post(ApiUrl + "new-problem/" + contestId, {
+      userId: userId,
+      name: problemName,
+      description: problemDescription
+    });
+  } catch (error) {
+    throw error;
+  }
+}
+
+export function getProblem(id) {
+  setupAuthorizationHeader();
+  var apiGetUrl = ApiUrl + "problem/" + id;
+  return axios.get(apiGetUrl);
+}

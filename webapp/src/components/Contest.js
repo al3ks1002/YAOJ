@@ -1,32 +1,51 @@
 import React, { Component } from "react";
-import { Panel } from "react-bootstrap";
+import { Button, Panel } from "react-bootstrap";
 
 import * as LocalStorageUtils from "../utils/localStorage.js";
 import loading from "../assets/loading.svg";
 import Styles from "../utils/styles.js";
 import * as AxiosUtils from "../utils/axios.js";
 
+import ProblemList from "../components/ProblemList.js";
+import history from "../utils/history";
+
 class Contest extends Component {
   constructor(props) {
     super(props);
 
+    this.handleAddProblem = this.handleAddProblem.bind(this);
+
     this.state = {
+      id: null,
       contest: null,
       loaded: false,
       error: null
     };
   }
 
+  isMyContest(contest) {
+    try {
+      const userId = LocalStorageUtils.getUserId();
+      return userId === contest.OwnerId;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  handleAddProblem() {
+    history.push("/new-problem/" + this.state.id);
+  }
+
   componentDidMount() {
     const id = parseInt(this.props.match.params.id, 10);
     if (id) {
+      this.setState({
+        id: id
+      });
       AxiosUtils.getContest(id)
         .then(result => {
           const contest = result.data;
-          if (
-            !contest.IsPublic &&
-            LocalStorageUtils.getUserId() !== contest.OwnerId
-          ) {
+          if (!contest.IsPublic && !this.isMyContest(contest)) {
             this.setState({
               error: new Error("Not authorized to see this contest")
             });
@@ -56,10 +75,22 @@ class Contest extends Component {
 
     if (this.state.loaded) {
       return (
-        <Panel>
-          <Panel.Heading>{this.state.contest.Name}</Panel.Heading>
-          <Panel.Body>Info about the contest here..</Panel.Body>
-        </Panel>
+        <div>
+          <Panel>
+            <Panel.Heading>{this.state.contest.Name}</Panel.Heading>
+            <Panel.Body>Info about the contest here..</Panel.Body>
+          </Panel>
+          <br />
+          <ProblemList contestId={this.state.id} />
+          {this.isMyContest(this.state.contest) && (
+            <div>
+              <br />
+              <Button bsStyle="primary" onClick={this.handleAddProblem}>
+                Add problem
+              </Button>
+            </div>
+          )}
+        </div>
       );
     }
 

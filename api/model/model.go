@@ -13,7 +13,8 @@ type Contest struct {
 }
 
 type Problem struct {
-	Id        string
-	ContestId string `db:"contest_id"`
-	Name      string
+	Id          string
+	ContestId   string `db:"contest_id"`
+	Name        string
+	Description string
 }

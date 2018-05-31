@@ -33,6 +33,9 @@ func (view View) Start() {
 	s.Handle("/contests/{user-id}", authMiddleware(UserContestsHandler(&view))).Methods("GET")
 	s.Handle("/new-contest", authMiddleware(NewContestHandler(&view))).Methods("POST")
 	s.Handle("/contest/{contest-id}", ContestHandler(&view)).Methods("GET")
+	s.Handle("/problems/{contest-id}", ProblemsHandler(&view)).Methods("GET")
+	s.Handle("/new-problem/{contest-id}", authMiddleware(NewProblemHandler(&view))).Methods("POST")
+	s.Handle("/problem/{problem-id}", ProblemHandler(&view)).Methods("GET")
 
 	headersOk := handlers.AllowedHeaders([]string{"X-Requested-With", "Authorization", "X-Auth-Key", "X-Auth-Secret", "Content-Type"})
 	originsOk := handlers.AllowedOrigins([]string{"*"})
@@ -144,6 +147,102 @@ func ContestHandler(view *View) http.Handler {
 			http.Error(w, err.Error(), 500)
 		} else {
 			payload, _ := json.Marshal(contest)
+			w.Write([]byte(payload))
+		}
+	})
+}
+
+func ProblemsHandler(view *View) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+
+		vars := mux.Vars(r)
+		userId := r.URL.Query().Get("userId")
+		contestId := vars["contest-id"]
+		if !view.Controller.IsPublic(contestId) && !view.Controller.IsMyContest(userId, contestId) {
+			err := "Not an owner of the contest"
+			log.Println(err)
+			http.Error(w, err, 403)
+		} else {
+			if problems, err := view.Controller.GetProblemsFromContest(contestId); err != nil {
+				log.Println(err)
+				http.Error(w, err.Error(), 500)
+			} else {
+				payload, _ := json.Marshal(problems)
+				w.Write([]byte(payload))
+			}
+		}
+	})
+}
+
+func NewProblemHandler(view *View) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		dec := json.NewDecoder(r.Body)
+		var requestInterface interface{}
+		if err := dec.Decode(&requestInterface); err != nil {
+			log.Println(err)
+			http.Error(w, err.Error(), 500)
+			return
+		}
+
+		requestMap, ok := requestInterface.(map[string]interface{})
+		if !ok {
+			err := "Could not convert request to map"
+			log.Println(err)
+			http.Error(w, err, 500)
+			return
+		}
+
+		userId, ok := requestMap["userId"].(string)
+		if !ok {
+			err := "Could not find userId in request"
+			log.Println(err)
+			http.Error(w, err, 500)
+			return
+		}
+
+		vars := mux.Vars(r)
+		contestId := vars["contest-id"]
+		if !view.Controller.IsMyContest(userId, contestId) {
+			err := "Not an owner of the contest"
+			log.Println(err)
+			http.Error(w, err, 403)
+			return
+		}
+
+		problemName, ok := requestMap["name"].(string)
+		if !ok {
+			err := "Could not find name in request"
+			log.Println(err)
+			http.Error(w, err, 500)
+			return
+		}
+
+		problemDescription, ok := requestMap["description"].(string)
+		if !ok {
+			err := "Could not find description in request"
+			log.Println(err)
+			http.Error(w, err, 500)
+			return
+		}
+
+		problem := model.Problem{ContestId: contestId, Name: problemName, Description: problemDescription}
+		if err := view.Controller.AddNewProblem(&problem); err != nil {
+			log.Println(err)
+			http.Error(w, err.Error(), 500)
+		}
+	})
+}
+
+func ProblemHandler(view *View) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		vars := mux.Vars(r)
+		if problem, err := view.Controller.GetProblemWithId(vars["problem-id"]); err != nil {
+			log.Println(err)
+			http.Error(w, err.Error(), 500)
+		} else {
+			payload, _ := json.Marshal(problem)
 			w.Write([]byte(payload))
 		}
 	})
