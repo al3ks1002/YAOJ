@@ -8,13 +8,16 @@ import {
 } from "react-bootstrap";
 
 import * as AxiosUtils from "../utils/axios.js";
+import * as LocalStorageUtils from "../utils/localStorage.js";
 import history from "../utils/history";
 
-class NewContest extends Component {
+class CreateOrUpdateContest extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
+      isNew: this.props.isNew,
+      id: null,
       isPublic: false,
       contestName: "",
       error: null
@@ -22,6 +25,49 @@ class NewContest extends Component {
 
     this.handleContestNameChange = this.handleContestNameChange.bind(this);
     this.handleIsPublicChange = this.handleIsPublicChange.bind(this);
+  }
+
+  isMyContest(contest) {
+    try {
+      const userId = LocalStorageUtils.getUserId();
+      return userId === contest.OwnerId;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  componentDidMount() {
+    if (!this.state.isNew) {
+      const id = parseInt(this.props.match.params.id, 10);
+      if (id) {
+        this.setState({
+          id: id
+        });
+        AxiosUtils.getContest(id)
+          .then(result => {
+            const contest = result.data;
+            if (!this.isMyContest(contest)) {
+              this.setState({
+                error: new Error("Not authorized to modify this contest")
+              });
+            } else {
+              this.setState({
+                isPublic: contest.IsPublic,
+                contestName: contest.Name
+              });
+            }
+          })
+          .catch(error => {
+            this.setState({
+              error: error
+            });
+          });
+      } else {
+        this.setState({
+          error: new Error("Contest ID is invalid")
+        });
+      }
+    }
   }
 
   handleContestNameChange(event) {
@@ -52,7 +98,7 @@ class NewContest extends Component {
       return;
     }
 
-    try {
+    if (this.state.isNew) {
       AxiosUtils.addContest(this.state.isPublic, this.state.contestName)
         .then(result => {
           history.push("/my-contests");
@@ -60,8 +106,14 @@ class NewContest extends Component {
         .catch(error => {
           this.setState({ error: error });
         });
-    } catch (error) {
-      this.setState({ error: error });
+    } else {
+      AxiosUtils.updateContest(this.state.id, this.state.isPublic, this.state.contestName)
+        .then(result => {
+          history.push("/my-contests");
+        })
+        .catch(error => {
+          this.setState({ error: error });
+        });
     }
   }
 
@@ -73,7 +125,12 @@ class NewContest extends Component {
     return (
       <form style={{ width: 500 }} onSubmit={this.handleSubmit.bind(this)}>
         <FormGroup controlId="formCheckbox">
-          <Checkbox onChange={this.handleIsPublicChange}>Is public:</Checkbox>
+          <Checkbox
+            checked={this.state.isPublic}
+            onChange={this.handleIsPublicChange}
+          >
+            Is public:
+          </Checkbox>
         </FormGroup>
         <FormGroup
           controlId="formBasicText"
@@ -96,4 +153,4 @@ class NewContest extends Component {
   }
 }
 
-export default NewContest;
+export default CreateOrUpdateContest;

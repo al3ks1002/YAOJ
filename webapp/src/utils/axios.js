@@ -69,6 +69,20 @@ export function addContest(isPublic, contestName) {
   }
 }
 
+export function updateContest(contestId, isPublic, contestName) {
+  setupAuthorizationHeader();
+  try {
+    const userId = LocalStorageUtils.getUserId();
+    return axios.post(ApiUrl + "update-contest/" + contestId, {
+      ownerId: userId,
+      name: contestName,
+      isPublic: isPublic
+    });
+  } catch (error) {
+    throw error;
+  }
+}
+
 export function addProblem(contestId, problemName, problemDescription) {
   setupAuthorizationHeader();
   try {
@@ -81,6 +95,14 @@ export function addProblem(contestId, problemName, problemDescription) {
   } catch (error) {
     throw error;
   }
+}
+
+export function updateProblem(problemId, problemName, problemDescription) {
+  setupAuthorizationHeader();
+  return axios.post(ApiUrl + "update-problem/" + problemId, {
+    name: problemName,
+    description: problemDescription
+  });
 }
 
 export function deleteContest(contestId) {

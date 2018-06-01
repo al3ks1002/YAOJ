@@ -49,6 +49,14 @@ func (ctrl *Controller) DeleteProblemWithId(problemId string) error {
 	return ctrl.Repository.DeleteProblemWithId(problemId)
 }
 
+func (ctrl *Controller) UpdateContest(contest *model.Contest) error {
+	return ctrl.Repository.UpdateContest(contest)
+}
+
+func (ctrl *Controller) UpdateProblem(problem *model.Problem) error {
+	return ctrl.Repository.UpdateProblem(problem)
+}
+
 func (ctrl *Controller) IsPublic(contestId string) bool {
 	if contest, err := ctrl.GetContestWithId(contestId); err != nil {
 		return false

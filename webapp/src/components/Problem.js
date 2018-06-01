@@ -13,6 +13,7 @@ class Problem extends Component {
     super(props);
 
     this.handleDeleteProblem = this.handleDeleteProblem.bind(this);
+    this.handleUpdateProblem = this.handleUpdateProblem.bind(this);
 
     this.state = {
       id: null,
@@ -40,6 +41,10 @@ class Problem extends Component {
       .catch(error => {
         this.setState({ error: error });
       });
+  }
+
+  handleUpdateProblem() {
+    history.push("/update-problem/" + this.state.id);
   }
 
   componentDidMount() {
@@ -96,15 +101,22 @@ class Problem extends Component {
       return (
         <div>
           <Panel>
-            <Panel.Heading>Contest: {this.state.contest.Name}</Panel.Heading>
+            <Panel.Heading>
+              <h5>Contest: {this.state.contest.Name}</h5>
+            </Panel.Heading>
             <Panel.Body>
-              <div>Problem name: {this.state.problem.Name}</div>
+              <div>
+                <h4>Problem: {this.state.problem.Name}</h4>
+              </div>
               <br />
               <Well>{this.state.problem.Description}</Well>
             </Panel.Body>
           </Panel>
           {this.isMyContest(this.state.contest) && (
             <div>
+              <br />
+              <Button onClick={this.handleUpdateProblem}>Update problem</Button>
+              <br />
               <br />
               <Button bsStyle="danger" onClick={this.handleDeleteProblem}>
                 Delete Problem

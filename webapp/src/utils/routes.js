@@ -7,8 +7,9 @@ import Callback from "../components/Callback.js";
 import Profile from "../components/Profile.js";
 import ContestList from "../components/ContestList.js";
 import ErrorBoundary from "../components/ErrorBoundary.js";
-import NewContest from "../components/NewContest.js";
+import CreateOrUpdateContest from "../components/CreateOrUpdateContest.js";
 import NewProblem from "../components/NewProblem.js";
+import UpdateProblem from "../components/UpdateProblem.js";
 import Contest from "../components/Contest.js";
 import Problem from "../components/Problem.js";
 import Auth from "../services/Auth.js";
@@ -44,11 +45,24 @@ export const makeMainRoutes = () => {
               <Redirect to="/home" />
             ) : (
               <ErrorBoundary>
-                <NewContest {...props} />
+                <CreateOrUpdateContest isNew={true} {...props} />
               </ErrorBoundary>
             )
           }
         />
+        <Route
+          path="/update-contest/:id"
+          render={props =>
+            !auth.isAuthenticated() ? (
+              <Redirect to="/home" />
+            ) : (
+              <ErrorBoundary>
+                <CreateOrUpdateContest isNew={false} {...props} />
+              </ErrorBoundary>
+            )
+          }
+        />
+
         <Route
           path="/my-contests"
           render={props =>
@@ -108,6 +122,18 @@ export const makeMainRoutes = () => {
             ) : (
               <ErrorBoundary>
                 <NewProblem {...props} />
+              </ErrorBoundary>
+            )
+          }
+        />
+        <Route
+          path="/update-problem/:problemId"
+          render={props =>
+            !auth.isAuthenticated() ? (
+              <Redirect to="/home" />
+            ) : (
+              <ErrorBoundary>
+                <UpdateProblem {...props} />
               </ErrorBoundary>
             )
           }

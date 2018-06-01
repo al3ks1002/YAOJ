@@ -14,6 +14,7 @@ class Contest extends Component {
     super(props);
 
     this.handleAddProblem = this.handleAddProblem.bind(this);
+    this.handleUpdateContest = this.handleUpdateContest.bind(this);
     this.handleDeleteContest = this.handleDeleteContest.bind(this);
 
     this.state = {
@@ -35,6 +36,10 @@ class Contest extends Component {
 
   handleAddProblem() {
     history.push("/new-problem/" + this.state.id);
+  }
+
+  handleUpdateContest() {
+    history.push("/update-contest/" + this.state.id);
   }
 
   handleDeleteContest() {
@@ -88,7 +93,13 @@ class Contest extends Component {
       return (
         <div>
           <Panel>
-            <Panel.Heading>{this.state.contest.Name}</Panel.Heading>
+            <Panel.Heading>
+              <h4>{this.state.contest.Name}</h4>
+            </Panel.Heading>
+            <Panel.Body>
+              {!this.state.contest.IsPublic && "Not "}
+              Public
+            </Panel.Body>
           </Panel>
           <br />
           <ProblemList contestId={this.state.id} />
@@ -98,10 +109,15 @@ class Contest extends Component {
               <Button bsStyle="primary" onClick={this.handleAddProblem}>
                 Add problem
               </Button>
+
+              <br />
+              <br />
+              <Button onClick={this.handleUpdateContest}>Update contest</Button>
+
               <br />
               <br />
               <Button bsStyle="danger" onClick={this.handleDeleteContest}>
-                DeleteContest
+                Delete contest
               </Button>
             </div>
           )}

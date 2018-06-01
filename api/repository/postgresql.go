@@ -132,3 +132,17 @@ func (db *PostgreSQL) DeleteProblemWithId(problemId string) error {
 	}
 	return nil
 }
+
+func (db *PostgreSQL) UpdateContest(contest *model.Contest) error {
+	if _, err := db.dbConn.NamedExec("UPDATE contests SET owner_id = :owner_id, name = :name, is_public = :is_public WHERE id = :id", contest); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (db *PostgreSQL) UpdateProblem(problem *model.Problem) error {
+	if _, err := db.dbConn.NamedExec("UPDATE problems SET name = :name, description = :description WHERE id = :id", problem); err != nil {
+		return err
+	}
+	return nil
+}

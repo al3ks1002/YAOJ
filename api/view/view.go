@@ -44,6 +44,9 @@ func (view View) Start() {
 	s.Handle("/delete-contest/{contest-id}", authMiddleware(DeleteContestHandler(&view))).Methods("DELETE")
 	s.Handle("/delete-problem/{problem-id}", authMiddleware(DeleteProblemHandler(&view))).Methods("DELETE")
 
+	s.Handle("/update-contest/{contest-id}", authMiddleware(UpdateContestHandler(&view))).Methods("POST")
+	s.Handle("/update-problem/{problem-id}", authMiddleware(UpdateProblemHandler(&view))).Methods("POST")
+
 	headersOk := handlers.AllowedHeaders([]string{"X-Requested-With", "Authorization", "X-Auth-Key", "X-Auth-Secret", "Content-Type"})
 	originsOk := handlers.AllowedOrigins([]string{"*"})
 	methodsOk := handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS"})
@@ -450,6 +453,97 @@ func DeleteProblemHandler(view *View) http.Handler {
 				log.Println(err)
 				http.Error(w, err.Error(), 500)
 			}
+		}
+	})
+}
+
+// Updates a Contest in the storage
+func UpdateContestHandler(view *View) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		dec := json.NewDecoder(r.Body)
+		var contest model.Contest
+
+		// Get the contest ID from the URI
+		vars := mux.Vars(r)
+		contestId := vars["contest-id"]
+
+		// Decode the contest from the request
+		if err := dec.Decode(&contest); err != nil {
+			log.Println(err)
+			http.Error(w, err.Error(), 500)
+		} else {
+			// Get the sender ID from the request
+			senderId := context.Get(r, "senderId").(string)
+
+			// Check if the sender is the same as the owner
+			if senderId != contest.OwnerId {
+				err := "Sender is not the same as the owner of the contest from the request"
+				log.Println(err)
+				http.Error(w, err, 403)
+				return
+			}
+
+			contest.Id = contestId
+
+			// Add the new contest to the storage
+			if err := view.Controller.UpdateContest(&contest); err != nil {
+				log.Println(err)
+				http.Error(w, err.Error(), 500)
+			}
+		}
+	})
+}
+
+// Updates a Problem in the storage
+func UpdateProblemHandler(view *View) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		dec := json.NewDecoder(r.Body)
+		var problem model.Problem
+
+		// Get the problem ID from the URI
+		vars := mux.Vars(r)
+		problemId := vars["problem-id"]
+
+		// Decode the problem from the request
+		if err := dec.Decode(&problem); err != nil {
+			log.Println(err)
+			http.Error(w, err.Error(), 500)
+			return
+		}
+
+		problem.Id = problemId
+
+		// Get the current problem from the storage
+		currentProblem, err := view.Controller.GetProblemWithId(problemId)
+		if err != nil {
+			log.Println(err)
+			http.Error(w, err.Error(), 500)
+			return
+		}
+
+		// Get the contest from the storage
+		contest, err := view.Controller.GetContestWithId(currentProblem.ContestId)
+		if err != nil {
+			log.Println(err)
+			http.Error(w, err.Error(), 500)
+			return
+		}
+
+		// Get the sender ID from the request
+		senderId := context.Get(r, "senderId").(string)
+
+		// Check if the sender is the same as the owner
+		if senderId != contest.OwnerId {
+			err := "Sender is not the same as the owner of the contest from the request"
+			log.Println(err)
+			http.Error(w, err, 403)
+			return
+		}
+
+		// Update the problem in the storage
+		if err := view.Controller.UpdateProblem(&problem); err != nil {
+			log.Println(err)
+			http.Error(w, err.Error(), 500)
 		}
 	})
 }

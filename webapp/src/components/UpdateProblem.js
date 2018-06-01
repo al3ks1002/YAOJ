@@ -2,14 +2,16 @@ import React, { Component } from "react";
 import { FormGroup, Button, FormControl, HelpBlock } from "react-bootstrap";
 
 import * as AxiosUtils from "../utils/axios.js";
+import * as LocalStorageUtils from "../utils/localStorage.js";
 import history from "../utils/history";
 
-class NewProblem extends Component {
+class UpdateProblem extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      contestId: null,
+      problemId: null,
+      contest: null,
       problemName: "",
       problemDescription: "",
       error: null
@@ -21,10 +23,57 @@ class NewProblem extends Component {
     );
   }
 
+  isMyContest(contest) {
+    try {
+      const userId = LocalStorageUtils.getUserId();
+      return userId === contest.OwnerId;
+    } catch (error) {
+      return false;
+    }
+  }
+
   componentDidMount() {
-    const contestId = parseInt(this.props.match.params.contestId, 10);
-    if (contestId) {
-      this.setState({ contestId: contestId });
+    const problemId = parseInt(this.props.match.params.problemId, 10);
+    if (problemId) {
+      this.setState({
+        problemId: problemId
+      });
+      AxiosUtils.getProblem(problemId)
+        .then(result => {
+          const problem = result.data;
+          this.setState({
+            problemName: problem.Name,
+            problemDescription: problem.Description
+          });
+
+          AxiosUtils.getContest(problem.ContestId)
+            .then(result => {
+              const contest = result.data;
+              if (!this.isMyContest(contest)) {
+                this.setState({
+                  error: new Error("Not authorized to modify this problem")
+                });
+              } else {
+                this.setState({
+                  contest: contest
+                });
+              }
+            })
+            .catch(error => {
+              this.setState({
+                error: error
+              });
+            });
+        })
+        .catch(error => {
+          this.setState({
+            error: error
+          });
+        });
+    } else {
+      this.setState({
+        error: new Error("Problem ID is invalid")
+      });
     }
   }
 
@@ -69,8 +118,8 @@ class NewProblem extends Component {
       return;
     }
 
-    AxiosUtils.addProblem(
-      this.state.contestId,
+    AxiosUtils.updateProblem(
+      this.state.problemId,
       this.state.problemName,
       this.state.problemDescription
     )
@@ -125,4 +174,4 @@ class NewProblem extends Component {
   }
 }
 
-export default NewProblem;
+export default UpdateProblem;
