@@ -87,3 +87,8 @@ export function deleteContest(contestId) {
   setupAuthorizationHeader();
   return axios.delete(ApiUrl + "delete-contest/" + contestId);
 }
+
+export function deleteProblem(problemId) {
+  setupAuthorizationHeader();
+  return axios.delete(ApiUrl + "delete-problem/" + problemId);
+}

@@ -1,14 +1,18 @@
 import React, { Component } from "react";
-import { Panel } from "react-bootstrap";
+import { Well, Button, Panel } from "react-bootstrap";
 
 import * as LocalStorageUtils from "../utils/localStorage.js";
 import loading from "../assets/loading.svg";
 import Styles from "../utils/styles.js";
 import * as AxiosUtils from "../utils/axios.js";
 
+import history from "../utils/history";
+
 class Problem extends Component {
   constructor(props) {
     super(props);
+
+    this.handleDeleteProblem = this.handleDeleteProblem.bind(this);
 
     this.state = {
       id: null,
@@ -26,6 +30,16 @@ class Problem extends Component {
     } catch (error) {
       return false;
     }
+  }
+
+  handleDeleteProblem() {
+    AxiosUtils.deleteProblem(this.state.problem.Id)
+      .then(result => {
+        history.replace("/contest/" + this.state.contest.Id);
+      })
+      .catch(error => {
+        this.setState({ error: error });
+      });
   }
 
   componentDidMount() {
@@ -82,9 +96,21 @@ class Problem extends Component {
       return (
         <div>
           <Panel>
-            <Panel.Heading>{this.state.problem.Name}</Panel.Heading>
-            <Panel.Body>{this.state.problem.Description}</Panel.Body>
+            <Panel.Heading>Contest: {this.state.contest.Name}</Panel.Heading>
+            <Panel.Body>
+              <div>Problem name: {this.state.problem.Name}</div>
+              <br />
+              <Well>{this.state.problem.Description}</Well>
+            </Panel.Body>
           </Panel>
+          {this.isMyContest(this.state.contest) && (
+            <div>
+              <br />
+              <Button bsStyle="danger" onClick={this.handleDeleteProblem}>
+                Delete Problem
+              </Button>
+            </div>
+          )}
         </div>
       );
     }

@@ -42,6 +42,7 @@ func (view View) Start() {
 	s.Handle("/new-problem/{contest-id}", authMiddleware(NewProblemHandler(&view))).Methods("POST")
 
 	s.Handle("/delete-contest/{contest-id}", authMiddleware(DeleteContestHandler(&view))).Methods("DELETE")
+	s.Handle("/delete-problem/{problem-id}", authMiddleware(DeleteProblemHandler(&view))).Methods("DELETE")
 
 	headersOk := handlers.AllowedHeaders([]string{"X-Requested-With", "Authorization", "X-Auth-Key", "X-Auth-Secret", "Content-Type"})
 	originsOk := handlers.AllowedOrigins([]string{"*"})
@@ -412,6 +413,43 @@ func DeleteContestHandler(view *View) http.Handler {
 		if err := view.Controller.DeleteContestWithId(contestId); err != nil {
 			log.Println(err)
 			http.Error(w, err.Error(), 500)
+		}
+	})
+}
+
+// Deletes a Problem given a problem ID
+func DeleteProblemHandler(view *View) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+
+		// Get the problem ID from the URI
+		vars := mux.Vars(r)
+		problemId := vars["problem-id"]
+
+		// Get the problem from the storage
+		if problem, err := view.Controller.GetProblemWithId(problemId); err != nil {
+			log.Println(err)
+			http.Error(w, err.Error(), 500)
+		} else {
+			// Get the sender ID from the request
+			senderId := context.Get(r, "senderId").(string)
+
+			// Get the contest ID from the problem
+			contestId := problem.ContestId
+
+			// Verify if the sender is the owner of the problem
+			if !view.Controller.IsMyContest(senderId, contestId) {
+				err := "Not an owner of the problem"
+				log.Println(err)
+				http.Error(w, err, 403)
+				return
+			}
+
+			// Delete the problem from the storage
+			if err := view.Controller.DeleteProblemWithId(problemId); err != nil {
+				log.Println(err)
+				http.Error(w, err.Error(), 500)
+			}
 		}
 	})
 }

@@ -15,4 +15,5 @@ type Repository interface {
 	AddNewProblem(*model.Problem) error
 	GetProblemWithId(string) (*model.Problem, error)
 	DeleteContestWithId(string) error
+	DeleteProblemWithId(string) error
 }

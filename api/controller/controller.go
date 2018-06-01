@@ -45,6 +45,10 @@ func (ctrl *Controller) DeleteContestWithId(contestId string) error {
 	return ctrl.Repository.DeleteContestWithId(contestId)
 }
 
+func (ctrl *Controller) DeleteProblemWithId(problemId string) error {
+	return ctrl.Repository.DeleteProblemWithId(problemId)
+}
+
 func (ctrl *Controller) IsPublic(contestId string) bool {
 	if contest, err := ctrl.GetContestWithId(contestId); err != nil {
 		return false

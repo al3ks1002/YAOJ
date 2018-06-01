@@ -125,3 +125,10 @@ func (db *PostgreSQL) DeleteContestWithId(contestId string) error {
 	}
 	return nil
 }
+
+func (db *PostgreSQL) DeleteProblemWithId(problemId string) error {
+	if _, err := db.dbConn.Exec("DELETE FROM problems WHERE id = $1", problemId); err != nil {
+		return err
+	}
+	return nil
+}
