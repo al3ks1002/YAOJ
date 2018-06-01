@@ -43,26 +43,24 @@ class App extends Component {
             >
               Home
             </Button>
-            <DropdownButton
-              title="Contests"
-              bsStyle="primary"
-              className="btn-margin"
-              id={`dropdown-basic-contests`}
-            >
-              <MenuItem onClick={this.goTo.bind(this, "public-contests")}>
-                Public contests
-              </MenuItem>
-              {isAuthenticated() && (
+            {isAuthenticated() && (
+              <DropdownButton
+                title="Contests"
+                bsStyle="primary"
+                className="btn-margin"
+                id={`dropdown-basic-contests`}
+              >
+                <MenuItem onClick={this.goTo.bind(this, "public-contests")}>
+                  Public contests
+                </MenuItem>
                 <MenuItem onClick={this.goTo.bind(this, "new-contest")}>
                   New contest
                 </MenuItem>
-              )}
-              {isAuthenticated() && (
                 <MenuItem onClick={this.goTo.bind(this, "my-contests")}>
                   My contests
                 </MenuItem>
-              )}
-            </DropdownButton>
+              </DropdownButton>
+            )}
 
             {!isAuthenticated() && (
               <Button

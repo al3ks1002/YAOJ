@@ -5,10 +5,8 @@ class ContestRow extends Component {
     return (
       <tr>
         <td> {this.props.id} </td>
-        <td> {this.props.name} </td>
-        <td> {this.props.ownerId} </td>
         <td>
-          <a href={"/contest/" + this.props.id}>Go to</a>
+          <a href={"/contest/" + this.props.id}>{this.props.name}</a>
         </td>
       </tr>
     );

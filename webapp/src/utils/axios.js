@@ -12,37 +12,8 @@ function setupAuthorizationHeader() {
   }
 }
 
-export function getContests(isPublic) {
-  var apiGetUrl = ApiUrl + "contests";
-  if (!isPublic) {
-    try {
-      setupAuthorizationHeader();
-      const userId = LocalStorageUtils.getUserId();
-      apiGetUrl += "/" + userId;
-    } catch (error) {
-      throw error;
-    }
-  }
-  return axios.get(apiGetUrl);
-}
-
-export function getContest(id) {
-  setupAuthorizationHeader();
-  var userId = "";
-  try {
-    userId = LocalStorageUtils.getUserId();
-  } catch (error) {}
-  var apiGetUrl = ApiUrl + "contest/" + id;
-  return axios.get(apiGetUrl, {
-    params: {
-      userId: userId
-    }
-  });
-}
-
 export function handleLogin() {
   setupAuthorizationHeader();
-
   try {
     const userId = LocalStorageUtils.getUserId();
     const username = LocalStorageUtils.getUsername();
@@ -55,32 +26,43 @@ export function handleLogin() {
   }
 }
 
+export function getContest(contestId) {
+  setupAuthorizationHeader();
+  return axios.get(ApiUrl + "contest/" + contestId);
+}
+
+export function getProblems(contestId) {
+  setupAuthorizationHeader();
+  return axios.get(ApiUrl + "problems/" + contestId);
+}
+
+export function getProblem(problemId) {
+  setupAuthorizationHeader();
+  return axios.get(ApiUrl + "problem/" + problemId);
+}
+
+export function getContests(isPublic) {
+  setupAuthorizationHeader();
+  var apiGetUrl = ApiUrl + "contests";
+  if (!isPublic) {
+    try {
+      const userId = LocalStorageUtils.getUserId();
+      apiGetUrl += "/" + userId;
+    } catch (error) {
+      throw error;
+    }
+  }
+  return axios.get(apiGetUrl);
+}
+
 export function addContest(isPublic, contestName) {
   setupAuthorizationHeader();
   try {
     const userId = LocalStorageUtils.getUserId();
     return axios.post(ApiUrl + "new-contest", {
-      ownerid: userId,
+      ownerId: userId,
       name: contestName,
       isPublic: isPublic
-    });
-  } catch (error) {
-    throw error;
-  }
-}
-
-export function getProblems(contestId) {
-  setupAuthorizationHeader();
-  try {
-    var userId = "";
-    try {
-      userId = LocalStorageUtils.getUserId();
-    } catch (error) {}
-    var apiGetUrl = ApiUrl + "problems/" + contestId;
-    return axios.get(apiGetUrl, {
-      params: {
-        userId: userId
-      }
     });
   } catch (error) {
     throw error;
@@ -101,16 +83,7 @@ export function addProblem(contestId, problemName, problemDescription) {
   }
 }
 
-export function getProblem(id) {
+export function deleteContest(contestId) {
   setupAuthorizationHeader();
-  var userId = "";
-  try {
-    userId = LocalStorageUtils.getUserId();
-  } catch (error) {}
-  var apiGetUrl = ApiUrl + "problem/" + id;
-  return axios.get(apiGetUrl, {
-    params: {
-      userId: userId
-    }
-  });
+  return axios.delete(ApiUrl + "delete-contest/" + contestId);
 }

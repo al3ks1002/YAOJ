@@ -1,8 +1,6 @@
 package repository
 
 import (
-	"log"
-
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 
@@ -61,7 +59,6 @@ func (db *PostgreSQL) createTablesIfNonExistant() error {
 }
 
 func (db *PostgreSQL) HandleLogin(user *model.User) error {
-	log.Println(user)
 	if _, err := db.dbConn.NamedExec("INSERT INTO users (id, name) VALUES (:id, :name) ON CONFLICT (id) DO UPDATE SET name = :name", user); err != nil {
 		return err
 	}
@@ -91,9 +88,9 @@ func (db *PostgreSQL) AddNewContest(contest *model.Contest) error {
 	return nil
 }
 
-func (db *PostgreSQL) GetContestWithId(id string) (*model.Contest, error) {
+func (db *PostgreSQL) GetContestWithId(contestId string) (*model.Contest, error) {
 	contest := &model.Contest{}
-	if err := db.dbConn.Get(contest, "SELECT * FROM contests WHERE id = $1", id); err != nil {
+	if err := db.dbConn.Get(contest, "SELECT * FROM contests WHERE id = $1", contestId); err != nil {
 		return nil, err
 	}
 	return contest, nil
@@ -114,10 +111,17 @@ func (db *PostgreSQL) GetProblemsFromContest(contestId string) ([]model.Problem,
 	return problems, nil
 }
 
-func (db *PostgreSQL) GetProblemWithId(id string) (*model.Problem, error) {
+func (db *PostgreSQL) GetProblemWithId(problemId string) (*model.Problem, error) {
 	problem := &model.Problem{}
-	if err := db.dbConn.Get(problem, "SELECT * FROM problems WHERE id = $1", id); err != nil {
+	if err := db.dbConn.Get(problem, "SELECT * FROM problems WHERE id = $1", problemId); err != nil {
 		return nil, err
 	}
 	return problem, nil
+}
+
+func (db *PostgreSQL) DeleteContestWithId(contestId string) error {
+	if _, err := db.dbConn.Exec("DELETE FROM contests WHERE id = $1", contestId); err != nil {
+		return err
+	}
+	return nil
 }

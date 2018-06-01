@@ -23,8 +23,9 @@ class ContestList extends Component {
   componentDidMount() {
     AxiosUtils.getContests(this.state.isPublic)
       .then(result => {
+        const contests = result.data;
         this.setState({
-          contests: result.data,
+          contests: contests,
           loaded: true
         });
       })
@@ -50,20 +51,11 @@ class ContestList extends Component {
             <tr>
               <th>#</th>
               <th>Name</th>
-              <th>Owner Id</th>
-              <th>Link</th>
             </tr>
           </thead>
           <tbody>
             {this.state.contests.map(function(contest, i) {
-              return (
-                <ContestRow
-                  key={i}
-                  id={contest.Id}
-                  name={contest.Name}
-                  ownerId={contest.OwnerId}
-                />
-              );
+              return <ContestRow key={i} id={contest.Id} name={contest.Name} />;
             })}
           </tbody>
         </Table>

@@ -6,11 +6,10 @@ type User struct {
 }
 
 type Contest struct {
-	Id          string
-	OwnerId     string `db:"owner_id"`
-	Name        string
-	Description string
-	IsPublic    bool `db:"is_public"`
+	Id       string
+	OwnerId  string `db:"owner_id"`
+	Name     string
+	IsPublic bool `db:"is_public"`
 }
 
 type Problem struct {

@@ -25,8 +25,8 @@ func (ctrl *Controller) AddNewContest(contest *model.Contest) error {
 	return ctrl.Repository.AddNewContest(contest)
 }
 
-func (ctrl *Controller) GetContestWithId(id string) (*model.Contest, error) {
-	return ctrl.Repository.GetContestWithId(id)
+func (ctrl *Controller) GetContestWithId(contestId string) (*model.Contest, error) {
+	return ctrl.Repository.GetContestWithId(contestId)
 }
 
 func (ctrl *Controller) GetProblemsFromContest(contestId string) ([]model.Problem, error) {
@@ -37,8 +37,12 @@ func (ctrl *Controller) AddNewProblem(problem *model.Problem) error {
 	return ctrl.Repository.AddNewProblem(problem)
 }
 
-func (ctrl *Controller) GetProblemWithId(id string) (*model.Problem, error) {
-	return ctrl.Repository.GetProblemWithId(id)
+func (ctrl *Controller) GetProblemWithId(problemId string) (*model.Problem, error) {
+	return ctrl.Repository.GetProblemWithId(problemId)
+}
+
+func (ctrl *Controller) DeleteContestWithId(contestId string) error {
+	return ctrl.Repository.DeleteContestWithId(contestId)
 }
 
 func (ctrl *Controller) IsPublic(contestId string) bool {

@@ -14,6 +14,7 @@ class Contest extends Component {
     super(props);
 
     this.handleAddProblem = this.handleAddProblem.bind(this);
+    this.handleDeleteContest = this.handleDeleteContest.bind(this);
 
     this.state = {
       id: null,
@@ -34,6 +35,16 @@ class Contest extends Component {
 
   handleAddProblem() {
     history.push("/new-problem/" + this.state.id);
+  }
+
+  handleDeleteContest() {
+    AxiosUtils.deleteContest(this.state.contest.Id)
+      .then(result => {
+        history.replace("/my-contests");
+      })
+      .catch(error => {
+        this.setState({ error: error });
+      });
   }
 
   componentDidMount() {
@@ -86,6 +97,11 @@ class Contest extends Component {
               <br />
               <Button bsStyle="primary" onClick={this.handleAddProblem}>
                 Add problem
+              </Button>
+              <br />
+              <br />
+              <Button bsStyle="danger" onClick={this.handleDeleteContest}>
+                DeleteContest
               </Button>
             </div>
           )}

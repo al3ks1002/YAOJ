@@ -50,7 +50,6 @@ class ProblemList extends Component {
             <tr>
               <th>#</th>
               <th>Name</th>
-              <th>Link</th>
             </tr>
           </thead>
           <tbody>
