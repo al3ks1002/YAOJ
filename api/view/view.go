@@ -607,7 +607,7 @@ func UploadTestsHandler(view *View) http.Handler {
 	})
 }
 
-// Returns a list of .in Tests for given a problem ID
+// Returns a list of Tests for given a problem ID
 func TestsHandler(view *View, terminationString string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")

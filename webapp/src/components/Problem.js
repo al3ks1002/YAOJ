@@ -179,31 +179,36 @@ class Problem extends Component {
               </div>
             )}
           </div>
-          <div style={Styles.flex}>
-            <Dropzone onDrop={this.onDrop.bind(this)}>
-              <p>
-                Try dropping some files here, or click to select files to
-                upload. 
-                <br/> 
-                <br/> 
-                Only .in and .ok files are accepted.
-              </p>
-            </Dropzone>
-            <aside>
-              <h2>Dropped files</h2>
-              <ul>
-                {this.state.files.map((file, i) => (
-                  <li key={i}>
-                    {file.name} - {file.size} bytes
-                  </li>
-                ))}
-              </ul>
-              <div>
-                <Button onClick={this.handleUploadTests}>Upload tests</Button>
-              </div>
-            </aside>
-            <TestList refresh={this.state.refresh} problemId={this.state.id} />
-          </div>
+          {this.isMyContest(this.state.contest) && (
+            <div style={Styles.flex}>
+              <Dropzone onDrop={this.onDrop.bind(this)}>
+                <p>
+                  Try dropping some files here, or click to select files to
+                  upload.
+                  <br />
+                  <br />
+                  Only .in and .ok files are accepted.
+                </p>
+              </Dropzone>
+              <aside>
+                <h2>Dropped files</h2>
+                <ul>
+                  {this.state.files.map((file, i) => (
+                    <li key={i}>
+                      {file.name} - {file.size} bytes
+                    </li>
+                  ))}
+                </ul>
+                <div>
+                  <Button onClick={this.handleUploadTests}>Upload tests</Button>
+                </div>
+              </aside>
+              <TestList
+                refresh={this.state.refresh}
+                problemId={this.state.id}
+              />
+            </div>
+          )}
         </div>
       );
     }
