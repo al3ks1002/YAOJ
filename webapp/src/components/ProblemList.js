@@ -53,7 +53,7 @@ class ProblemList extends Component {
             </tr>
           </thead>
           <tbody>
-            {this.state.problems.map(function(problem, i) {
+            {this.state.problems.map((problem, i) => {
               return <ProblemRow key={i} id={problem.Id} name={problem.Name} />;
             })}
           </tbody>

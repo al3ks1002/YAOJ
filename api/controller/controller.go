@@ -1,6 +1,12 @@
 package controller
 
 import (
+	"bytes"
+	"encoding/json"
+	"io/ioutil"
+	"mime/multipart"
+	"net/http"
+
 	"../model"
 	"../repository"
 )
@@ -71,4 +77,80 @@ func (ctrl *Controller) IsMyContest(userId string, contestId string) bool {
 	} else {
 		return contest.OwnerId == userId
 	}
+}
+
+const SeaweedMaster string = "http://localhost:9333/"
+const SeaweedVolume string = "http://localhost:8081/"
+
+func (ctrl *Controller) GetSeaweedId() (string, error) {
+	response, err := http.Get(SeaweedMaster + "dir/assign")
+	if err != nil {
+		return "", err
+	}
+
+	defer response.Body.Close()
+	contents, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return "", err
+	}
+
+	var jsonMap map[string]interface{}
+	json.Unmarshal([]byte(string(contents)), &jsonMap)
+
+	fId, ok := jsonMap["fid"].(string)
+	if !ok {
+		return "", err
+	}
+
+	return fId, nil
+}
+
+func (ctrl *Controller) SeaweedPostTest(testName string, testContent string, fId string) (*http.Response, error) {
+	body := new(bytes.Buffer)
+	writer := multipart.NewWriter(body)
+	part, err := writer.CreateFormFile("file", testName)
+	if err != nil {
+		return nil, err
+	}
+	part.Write([]byte(testContent))
+
+	err = writer.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	seaweedRequest, err := http.NewRequest("POST", SeaweedVolume+fId, body)
+	seaweedRequest.Header.Add("Content-Type", writer.FormDataContentType())
+	if err != nil {
+		return nil, err
+	}
+
+	client := &http.Client{}
+	return client.Do(seaweedRequest)
+}
+
+func (ctrl *Controller) SeaweedDelete(fId string) (*http.Response, error) {
+	seaweedRequest, err := http.NewRequest("DELETE", SeaweedVolume+fId, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	client := &http.Client{}
+	return client.Do(seaweedRequest)
+}
+
+func (ctrl *Controller) AddTestInStorage(problemId string, fId string, testName string) error {
+	return ctrl.Repository.AddTest(problemId, fId, testName)
+}
+
+func (ctrl *Controller) GetTestsForProblem(problemId string, terminationString string) ([]model.Test, error) {
+	return ctrl.Repository.GetTestsForProblem(problemId, terminationString)
+}
+
+func (ctrl *Controller) GetTestWithId(fId string) (*model.Test, error) {
+	return ctrl.Repository.GetTestWithId(fId)
+}
+
+func (ctrl *Controller) DeleteTestWithId(fId string) error {
+	return ctrl.Repository.DeleteTestWithId(fId)
 }

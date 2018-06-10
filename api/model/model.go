@@ -18,3 +18,9 @@ type Problem struct {
 	Name        string
 	Description string
 }
+
+type Test struct {
+	TestName  string `db:"test_name"`
+	ProblemId string `db:"problem_id"`
+	FId       string `db:"f_id"`
+}

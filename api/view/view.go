@@ -47,6 +47,13 @@ func (view View) Start() {
 	s.Handle("/update-contest/{contest-id}", authMiddleware(UpdateContestHandler(&view))).Methods("POST")
 	s.Handle("/update-problem/{problem-id}", authMiddleware(UpdateProblemHandler(&view))).Methods("POST")
 
+	s.Handle("/upload-tests/{problem-id}", authMiddleware(UploadTestsHandler(&view))).Methods("POST")
+
+	s.Handle("/in-tests/{problem-id}", authMiddleware(TestsHandler(&view, "in"))).Methods("GET")
+	s.Handle("/ok-tests/{problem-id}", authMiddleware(TestsHandler(&view, "ok"))).Methods("GET")
+
+	s.Handle("/delete-test/{f-id}", authMiddleware(DeleteTestHandler(&view))).Methods("DELETE")
+
 	headersOk := handlers.AllowedHeaders([]string{"X-Requested-With", "Authorization", "X-Auth-Key", "X-Auth-Secret", "Content-Type"})
 	originsOk := handlers.AllowedOrigins([]string{"*"})
 	methodsOk := handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS"})
@@ -544,6 +551,161 @@ func UpdateProblemHandler(view *View) http.Handler {
 		if err := view.Controller.UpdateProblem(&problem); err != nil {
 			log.Println(err)
 			http.Error(w, err.Error(), 500)
+		}
+	})
+}
+
+// Uploads tests for a specific Problem
+func UploadTestsHandler(view *View) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if err := r.ParseMultipartForm((1 << 20) * 100); err != nil {
+			log.Println(err)
+			http.Error(w, err.Error(), 500)
+		}
+
+		// Go through all the uploaded tests
+		for k, v := range r.Form {
+			testName := k
+			testContent := string(v[0])
+
+			// Get a Seaweed file ID
+			fId, err := view.Controller.GetSeaweedId()
+			if err != nil {
+				log.Println(err)
+				http.Error(w, err.Error(), 500)
+				return
+			}
+
+			// Do a POST request to Seaweed to save the test in the filesyste2
+			seaweedResponse, err := view.Controller.SeaweedPostTest(testName, testContent, fId)
+			if err != nil {
+				log.Println(err)
+				http.Error(w, err.Error(), 500)
+				return
+			}
+
+			// Check the Seaweed response code
+			if seaweedResponse.StatusCode < 200 || seaweedResponse.StatusCode > 299 {
+				err := "Seaweed POST error"
+				log.Println(err)
+				http.Error(w, err, seaweedResponse.StatusCode)
+				return
+			}
+
+			// Get the problem ID from the URI
+			vars := mux.Vars(r)
+			problemId := vars["problem-id"]
+
+			// Add the test in the storage
+			err = view.Controller.AddTestInStorage(problemId, fId, testName)
+			if err != nil {
+				log.Println(err)
+				http.Error(w, err.Error(), 500)
+				return
+			}
+		}
+	})
+}
+
+// Returns a list of .in Tests for given a problem ID
+func TestsHandler(view *View, terminationString string) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+
+		// Get the problem ID from the URI
+		vars := mux.Vars(r)
+		problemId := vars["problem-id"]
+
+		// Get the problem from the storage
+		if problem, err := view.Controller.GetProblemWithId(problemId); err != nil {
+			log.Println(err)
+			http.Error(w, err.Error(), 500)
+		} else {
+			// Get the sender ID from the request
+			senderId := context.Get(r, "senderId").(string)
+
+			// Get the contest ID from the problem
+			contestId := problem.ContestId
+
+			// Check if owner of the problem
+			if !view.Controller.IsMyContest(senderId, contestId) {
+				err := "Not an owner of the problem"
+				log.Println(err)
+				http.Error(w, err, 403)
+				return
+			}
+
+			// Get the tests from the storage
+			if tests, err := view.Controller.GetTestsForProblem(problemId, terminationString); err != nil {
+				log.Println(err)
+				http.Error(w, err.Error(), 500)
+			} else {
+				log.Println(tests)
+				payload, _ := json.Marshal(tests)
+				w.Write([]byte(payload))
+			}
+		}
+	})
+}
+
+// Deletes a Test given a file ID
+func DeleteTestHandler(view *View) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		log.Println("1")
+
+		// Get the test ID from the URI
+		vars := mux.Vars(r)
+		fId := vars["f-id"]
+
+		// Get the test from the storage
+		if test, err := view.Controller.GetTestWithId(fId); err != nil {
+			log.Println(err)
+			http.Error(w, err.Error(), 500)
+		} else {
+			problemId := test.ProblemId
+
+			// Get the problem from the storage
+			if problem, err := view.Controller.GetProblemWithId(problemId); err != nil {
+				log.Println(err)
+				http.Error(w, err.Error(), 500)
+			} else {
+				// Get the sender ID from the request
+				senderId := context.Get(r, "senderId").(string)
+
+				// Get the contest ID from the problem
+				contestId := problem.ContestId
+
+				// Verify if the sender is the owner of the problem
+				if !view.Controller.IsMyContest(senderId, contestId) {
+					err := "Not an owner of the problem"
+					log.Println(err)
+					http.Error(w, err, 403)
+					return
+				}
+
+				// Delete the problem from the storage
+				if err := view.Controller.DeleteTestWithId(fId); err != nil {
+					log.Println(err)
+					http.Error(w, err.Error(), 500)
+				}
+
+				// Do a DELETE request to Seaweed to delete the test from the filesystem
+				seaweedResponse, err := view.Controller.SeaweedDelete(fId)
+				if err != nil {
+					log.Println(err)
+					http.Error(w, err.Error(), 500)
+					return
+				}
+
+				// Check the Seaweed response code
+				if seaweedResponse.StatusCode < 200 || seaweedResponse.StatusCode > 299 {
+					err := "Seaweed DELETE error"
+					log.Println(err)
+					http.Error(w, err, seaweedResponse.StatusCode)
+					return
+				}
+			}
 		}
 	})
 }

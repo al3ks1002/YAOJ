@@ -49,6 +49,13 @@ var schema = `
 		name TEXT NOT NULL,
 		description TEXT NOT NULL
 	);
+
+	CREATE TABLE IF NOT EXISTS tests (
+		test_name TEXT NOT NULL,
+		problem_id TEXT NOT NULL,
+		f_id TEXT NOT NULL,
+		PRIMARY KEY (test_name, problem_id)
+	);
 `
 
 func (db *PostgreSQL) createTablesIfNonExistant() error {
@@ -142,6 +149,47 @@ func (db *PostgreSQL) UpdateContest(contest *model.Contest) error {
 
 func (db *PostgreSQL) UpdateProblem(problem *model.Problem) error {
 	if _, err := db.dbConn.NamedExec("UPDATE problems SET name = :name, description = :description WHERE id = :id", problem); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (db *PostgreSQL) AddTest(problemId string, fId string, testName string) error {
+	if rows, err := db.dbConn.Queryx("SELECT * FROM tests WHERE test_name = $1 AND problem_id = $2", testName, problemId); err != nil {
+		return err
+	} else {
+		if rows.Rows.Next() {
+			if _, err := db.dbConn.Exec("UPDATE tests SET f_id = $1 WHERE test_name = $2 AND problem_id = $3", fId, testName, problemId); err != nil {
+				return err
+			}
+		} else {
+			if _, err := db.dbConn.Exec("INSERT INTO tests (test_name, problem_id, f_id) VALUES ($1, $2, $3)", testName, problemId, fId); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func (db *PostgreSQL) GetTestsForProblem(problemId string, terminationString string) ([]model.Test, error) {
+	tests := []model.Test{}
+	if err := db.dbConn.Select(&tests, "SELECT * FROM tests WHERE problem_id = $1 AND test_name LIKE $2", problemId, "%"+terminationString); err != nil {
+		return nil, err
+	}
+
+	return tests, nil
+}
+
+func (db *PostgreSQL) GetTestWithId(fId string) (*model.Test, error) {
+	test := &model.Test{}
+	if err := db.dbConn.Get(test, "SELECT * FROM tests WHERE f_id = $1", fId); err != nil {
+		return nil, err
+	}
+	return test, nil
+}
+
+func (db *PostgreSQL) DeleteTestWithId(fId string) error {
+	if _, err := db.dbConn.Exec("DELETE FROM tests WHERE f_id = $1", fId); err != nil {
 		return err
 	}
 	return nil

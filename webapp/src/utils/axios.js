@@ -114,3 +114,26 @@ export function deleteProblem(problemId) {
   setupAuthorizationHeader();
   return axios.delete(ApiUrl + "delete-problem/" + problemId);
 }
+
+export function uploadTests(problemId, formData) {
+  setupAuthorizationHeader();
+  const config = {
+    headers: { "content-type": "multipart/form-data" }
+  };
+  return axios.post(ApiUrl + "upload-tests/" + problemId, formData, config);
+}
+
+export function getInTests(problemId) {
+  setupAuthorizationHeader();
+  return axios.get(ApiUrl + "in-tests/" + problemId);
+}
+
+export function getOkTests(problemId) {
+  setupAuthorizationHeader();
+  return axios.get(ApiUrl + "ok-tests/" + problemId);
+}
+
+export function deleteTest(fId) {
+  setupAuthorizationHeader();
+  return axios.delete(ApiUrl + "delete-test/" + fId);
+}
