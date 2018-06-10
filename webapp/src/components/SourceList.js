@@ -6,44 +6,30 @@ import loading from "../assets/loading.svg";
 import Styles from "../utils/styles.js";
 import * as AxiosUtils from "../utils/axios.js";
 
-import TestRow from "../components/TestRow.js";
+import SourceRow from "../components/SourceRow.js";
 
-class TestList extends Component {
+class SourceList extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
       problemId: this.props.problemId,
-      inTests: [],
-      okTests: [],
-      loaded: 0,
+      sources: [],
+      loaded: false,
       error: null,
       refresh: this.props.refresh,
       shouldUpdate: false
     };
 
-    this.deleteTestCallback = this.deleteTestCallback.bind(this);
+    this.deleteSourceCallback = this.deleteSourceCallback.bind(this);
   }
 
-  fetchTests() {
-    AxiosUtils.getInTests(this.state.problemId)
+  fetchSources() {
+    AxiosUtils.getSources(this.state.problemId)
       .then(result => {
         this.setState({
-          inTests: result.data,
-          loaded: this.state.loaded + 1
-        });
-      })
-      .catch(error => {
-        this.setState({
-          error: error
-        });
-      });
-
-    AxiosUtils.getOkTests(this.state.problemId)
-      .then(result => {
-        this.setState({
-          okTests: result.data,
-          loaded: this.state.loaded + 1
+          sources: result.data,
+          loaded: true
         });
       })
       .catch(error => {
@@ -60,7 +46,7 @@ class TestList extends Component {
       return {
         shouldUpdate: true,
         refresh: props.refresh,
-        loaded: 0
+        loaded: false
       };
     }
 
@@ -69,17 +55,17 @@ class TestList extends Component {
   }
 
   componentDidMount() {
-    this.fetchTests();
+    this.fetchSources();
   }
 
   componentDidUpdate() {
     if (this.state.shouldUpdate) {
       this.setState({ shouldUpdate: false });
-      this.fetchTests();
+      this.fetchSources();
     }
   }
 
-  deleteTestCallback(fId) {
+  deleteSourceCallback(fId) {
     AxiosUtils.deleteFile(fId)
       .then(result => {
         this.setState({
@@ -99,7 +85,7 @@ class TestList extends Component {
       throw this.state.error;
     }
 
-    if (this.state.loaded === 2) {
+    if (this.state.loaded) {
       return (
         <div style={Styles.flex}>
           <Table striped bordered condensed hover>
@@ -110,44 +96,20 @@ class TestList extends Component {
               </tr>
             </thead>
             <tbody>
-              {this.state.inTests
+              {this.state.sources
                 .sort((a, b) => a.FileName > b.FileName)
-                .map((test, i) => {
+                .map((source, i) => {
                   return (
-                    <TestRow
+                    <SourceRow
                       key={i}
-                      name={test.FileName}
-                      fId={test.FId}
-                      deleteTestCallback={this.deleteTestCallback}
+                      name={source.FileName}
+                      fId={source.FId}
+                      deleteSourceCallback={this.deleteSourceCallback}
                     />
                   );
                 })}
             </tbody>
           </Table>
-          <aside>
-            <Table striped bordered condensed hover>
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Delete</th>
-                </tr>
-              </thead>
-              <tbody>
-                {this.state.okTests
-                  .sort((a, b) => a.FileName > b.FileName)
-                  .map((test, i) => {
-                    return (
-                      <TestRow
-                        key={i}
-                        name={test.FileName}
-                        fId={test.FId}
-                        deleteTestCallback={this.deleteTestCallback}
-                      />
-                    );
-                  })}
-              </tbody>
-            </Table>
-          </aside>
         </div>
       );
     }
@@ -162,4 +124,4 @@ class TestList extends Component {
   }
 }
 
-export default TestList;
+export default SourceList;

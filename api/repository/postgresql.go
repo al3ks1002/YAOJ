@@ -50,11 +50,11 @@ var schema = `
 		description TEXT NOT NULL
 	);
 
-	CREATE TABLE IF NOT EXISTS tests (
-		test_name TEXT NOT NULL,
+	CREATE TABLE IF NOT EXISTS files (
+		file_name TEXT NOT NULL,
 		problem_id TEXT NOT NULL,
 		f_id TEXT NOT NULL,
-		PRIMARY KEY (test_name, problem_id)
+		PRIMARY KEY (file_name, problem_id)
 	);
 `
 
@@ -154,16 +154,16 @@ func (db *PostgreSQL) UpdateProblem(problem *model.Problem) error {
 	return nil
 }
 
-func (db *PostgreSQL) AddTest(problemId string, fId string, testName string) error {
-	if rows, err := db.dbConn.Queryx("SELECT * FROM tests WHERE test_name = $1 AND problem_id = $2", testName, problemId); err != nil {
+func (db *PostgreSQL) AddFile(problemId string, fId string, fileName string) error {
+	if rows, err := db.dbConn.Queryx("SELECT * FROM files WHERE file_name = $1 AND problem_id = $2", fileName, problemId); err != nil {
 		return err
 	} else {
 		if rows.Rows.Next() {
-			if _, err := db.dbConn.Exec("UPDATE tests SET f_id = $1 WHERE test_name = $2 AND problem_id = $3", fId, testName, problemId); err != nil {
+			if _, err := db.dbConn.Exec("UPDATE files SET f_id = $1 WHERE file_name = $2 AND problem_id = $3", fId, fileName, problemId); err != nil {
 				return err
 			}
 		} else {
-			if _, err := db.dbConn.Exec("INSERT INTO tests (test_name, problem_id, f_id) VALUES ($1, $2, $3)", testName, problemId, fId); err != nil {
+			if _, err := db.dbConn.Exec("INSERT INTO files (file_name, problem_id, f_id) VALUES ($1, $2, $3)", fileName, problemId, fId); err != nil {
 				return err
 			}
 		}
@@ -171,25 +171,25 @@ func (db *PostgreSQL) AddTest(problemId string, fId string, testName string) err
 	return nil
 }
 
-func (db *PostgreSQL) GetTestsForProblem(problemId string, terminationString string) ([]model.Test, error) {
-	tests := []model.Test{}
-	if err := db.dbConn.Select(&tests, "SELECT * FROM tests WHERE problem_id = $1 AND test_name LIKE $2", problemId, "%"+terminationString); err != nil {
+func (db *PostgreSQL) GetFilesForProblem(problemId string, terminationString string) ([]model.File, error) {
+	files := []model.File{}
+	if err := db.dbConn.Select(&files, "SELECT * FROM files WHERE problem_id = $1 AND file_name LIKE $2", problemId, "%"+terminationString); err != nil {
 		return nil, err
 	}
 
-	return tests, nil
+	return files, nil
 }
 
-func (db *PostgreSQL) GetTestWithId(fId string) (*model.Test, error) {
-	test := &model.Test{}
-	if err := db.dbConn.Get(test, "SELECT * FROM tests WHERE f_id = $1", fId); err != nil {
+func (db *PostgreSQL) GetFileWithId(fId string) (*model.File, error) {
+	file := &model.File{}
+	if err := db.dbConn.Get(file, "SELECT * FROM files WHERE f_id = $1", fId); err != nil {
 		return nil, err
 	}
-	return test, nil
+	return file, nil
 }
 
-func (db *PostgreSQL) DeleteTestWithId(fId string) error {
-	if _, err := db.dbConn.Exec("DELETE FROM tests WHERE f_id = $1", fId); err != nil {
+func (db *PostgreSQL) DeleteFileWithId(fId string) error {
+	if _, err := db.dbConn.Exec("DELETE FROM files WHERE f_id = $1", fId); err != nil {
 		return err
 	}
 	return nil

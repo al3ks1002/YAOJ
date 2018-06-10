@@ -105,14 +105,14 @@ func (ctrl *Controller) GetSeaweedId() (string, error) {
 	return fId, nil
 }
 
-func (ctrl *Controller) SeaweedPostTest(testName string, testContent string, fId string) (*http.Response, error) {
+func (ctrl *Controller) SeaweedPost(fileName string, fileContent string, fId string) (*http.Response, error) {
 	body := new(bytes.Buffer)
 	writer := multipart.NewWriter(body)
-	part, err := writer.CreateFormFile("file", testName)
+	part, err := writer.CreateFormFile("file", fileName)
 	if err != nil {
 		return nil, err
 	}
-	part.Write([]byte(testContent))
+	part.Write([]byte(fileContent))
 
 	err = writer.Close()
 	if err != nil {
@@ -139,18 +139,18 @@ func (ctrl *Controller) SeaweedDelete(fId string) (*http.Response, error) {
 	return client.Do(seaweedRequest)
 }
 
-func (ctrl *Controller) AddTestInStorage(problemId string, fId string, testName string) error {
-	return ctrl.Repository.AddTest(problemId, fId, testName)
+func (ctrl *Controller) AddFileInStorage(problemId string, fId string, fileName string) error {
+	return ctrl.Repository.AddFile(problemId, fId, fileName)
 }
 
-func (ctrl *Controller) GetTestsForProblem(problemId string, terminationString string) ([]model.Test, error) {
-	return ctrl.Repository.GetTestsForProblem(problemId, terminationString)
+func (ctrl *Controller) GetFilesForProblem(problemId string, terminationString string) ([]model.File, error) {
+	return ctrl.Repository.GetFilesForProblem(problemId, terminationString)
 }
 
-func (ctrl *Controller) GetTestWithId(fId string) (*model.Test, error) {
-	return ctrl.Repository.GetTestWithId(fId)
+func (ctrl *Controller) GetFileWithId(fId string) (*model.File, error) {
+	return ctrl.Repository.GetFileWithId(fId)
 }
 
-func (ctrl *Controller) DeleteTestWithId(fId string) error {
-	return ctrl.Repository.DeleteTestWithId(fId)
+func (ctrl *Controller) DeleteFileWithId(fId string) error {
+	return ctrl.Repository.DeleteFileWithId(fId)
 }

@@ -18,8 +18,8 @@ type Repository interface {
 	DeleteProblemWithId(string) error
 	UpdateContest(*model.Contest) error
 	UpdateProblem(*model.Problem) error
-	AddTest(string, string, string) error
-	GetTestsForProblem(string, string) ([]model.Test, error)
-	GetTestWithId(string) (*model.Test, error)
-	DeleteTestWithId(string) error
+	AddFile(string, string, string) error
+	GetFilesForProblem(string, string) ([]model.File, error)
+	GetFileWithId(string) (*model.File, error)
+	DeleteFileWithId(string) error
 }

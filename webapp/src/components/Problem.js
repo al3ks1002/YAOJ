@@ -8,6 +8,7 @@ import Styles from "../utils/styles.js";
 import * as AxiosUtils from "../utils/axios.js";
 
 import TestList from "../components/TestList.js";
+import SourceList from "../components/SourceList.js";
 
 import history from "../utils/history";
 
@@ -18,13 +19,16 @@ class Problem extends Component {
     this.handleDeleteProblem = this.handleDeleteProblem.bind(this);
     this.handleUpdateProblem = this.handleUpdateProblem.bind(this);
     this.handleUploadTests = this.handleUploadTests.bind(this);
+    this.handleUploadSources = this.handleUploadSources.bind(this);
+    this.sendFilesRequest = this.sendFilesRequest.bind(this);
 
     this.state = {
       id: null,
       problem: null,
       contest: null,
       loaded: false,
-      files: [],
+      tests: [],
+      sources: [],
       error: null,
       refresh: false
     };
@@ -53,22 +57,42 @@ class Problem extends Component {
     history.push("/update-problem/" + this.state.id);
   }
 
-  onDrop(files) {
+  onTestsDrop(files) {
     const testRegex = new RegExp("^\\w+\\.(in|ok)$", "g");
     const filtered = files.filter(file => {
       return file.name.match(testRegex);
     });
 
     this.setState({
-      files: filtered
+      tests: filtered
     });
   }
 
-  sendTestsRequest(formData) {
-    AxiosUtils.uploadTests(this.state.id, formData)
+  onSourcesDrop(files) {
+    const sourceRegex = new RegExp("^\\w+\\.(cpp)$", "g");
+    const filtered = files.filter(file => {
+      return file.name.match(sourceRegex);
+    });
+
+    this.setState({
+      sources: filtered
+    });
+  }
+
+  sendFilesRequest(formData, fileType) {
+    AxiosUtils.uploadFiles(this.state.id, formData)
       .then(result => {
+        if (fileType === "test") {
+          this.setState({
+            tests: []
+          });
+        } else {
+          this.setState({
+            sources: []
+          });
+        }
+
         this.setState({
-          files: [],
           refresh: !this.state.refresh
         });
       })
@@ -77,17 +101,17 @@ class Problem extends Component {
       });
   }
 
-  handleUploadTests() {
-    var remainingFiles = this.state.files.length;
+  handleUploadFiles(files, callback, fileType) {
+    var remainingFiles = files.length;
 
     const formData = new FormData();
-    this.state.files.forEach(file => {
+    files.forEach(file => {
       const reader = new FileReader();
       reader.onload = () => {
         const fileContent = reader.result;
         formData.append(file.name, fileContent);
         if (!--remainingFiles) {
-          this.sendTestsRequest(formData);
+          callback(formData, fileType);
         }
       };
       reader.onabort = () =>
@@ -97,6 +121,14 @@ class Problem extends Component {
 
       reader.readAsText(file);
     });
+  }
+
+  handleUploadTests() {
+    this.handleUploadFiles(this.state.tests, this.sendFilesRequest, "test");
+  }
+
+  handleUploadSources() {
+    this.handleUploadFiles(this.state.sources, this.sendFilesRequest, "source");
   }
 
   componentDidMount() {
@@ -180,33 +212,64 @@ class Problem extends Component {
             )}
           </div>
           {this.isMyContest(this.state.contest) && (
-            <div style={Styles.flex}>
-              <Dropzone onDrop={this.onDrop.bind(this)}>
-                <p>
-                  Try dropping some files here, or click to select files to
-                  upload.
-                  <br />
-                  <br />
-                  Only .in and .ok files are accepted.
-                </p>
-              </Dropzone>
-              <aside>
-                <h2>Dropped files</h2>
-                <ul>
-                  {this.state.files.map((file, i) => (
-                    <li key={i}>
-                      {file.name} - {file.size} bytes
-                    </li>
-                  ))}
-                </ul>
-                <div>
-                  <Button onClick={this.handleUploadTests}>Upload tests</Button>
-                </div>
-              </aside>
-              <TestList
-                refresh={this.state.refresh}
-                problemId={this.state.id}
-              />
+            <div>
+              <div style={Styles.flex}>
+                <Dropzone onDrop={this.onTestsDrop.bind(this)}>
+                  <p>
+                    Upload tests.
+                    <br />
+                    <br />
+                    Only .in and .ok files are accepted.
+                  </p>
+                </Dropzone>
+                <aside>
+                  <h2>Dropped tests</h2>
+                  <ul>
+                    {this.state.tests.map((file, i) => (
+                      <li key={i}>
+                        {file.name} - {file.size} bytes
+                      </li>
+                    ))}
+                  </ul>
+                  <div>
+                    <Button onClick={this.handleUploadTests}>
+                      Upload tests
+                    </Button>
+                  </div>
+                </aside>
+                <TestList
+                  refresh={this.state.refresh}
+                  problemId={this.state.id}
+                />
+              </div>
+              <br />
+              <div style={Styles.flex}>
+                <Dropzone onDrop={this.onSourcesDrop.bind(this)}>
+                  <p>
+                    Upload source code.<br />
+                    <br />Only .cpp files are accepted.
+                  </p>
+                </Dropzone>
+                <aside>
+                  <h2>Dropped sources</h2>
+                  <ul>
+                    {this.state.sources.map((file, i) => (
+                      <li key={i}>
+                        {file.name} - {file.size} bytes
+                      </li>
+                    ))}
+                  </ul>
+                  <div>
+                    <Button onClick={this.handleUploadSources}>
+                      Upload sources
+                    </Button>
+                  </div>
+                </aside>
+                <SourceList
+                  refresh={this.state.refresh}
+                  problemId={this.state.id}
+                />
+              </div>
             </div>
           )}
         </div>

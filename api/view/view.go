@@ -47,12 +47,13 @@ func (view View) Start() {
 	s.Handle("/update-contest/{contest-id}", authMiddleware(UpdateContestHandler(&view))).Methods("POST")
 	s.Handle("/update-problem/{problem-id}", authMiddleware(UpdateProblemHandler(&view))).Methods("POST")
 
-	s.Handle("/upload-tests/{problem-id}", authMiddleware(UploadTestsHandler(&view))).Methods("POST")
+	s.Handle("/upload-files/{problem-id}", authMiddleware(UploadFilesHandler(&view))).Methods("POST")
 
-	s.Handle("/in-tests/{problem-id}", authMiddleware(TestsHandler(&view, "in"))).Methods("GET")
-	s.Handle("/ok-tests/{problem-id}", authMiddleware(TestsHandler(&view, "ok"))).Methods("GET")
+	s.Handle("/in-tests/{problem-id}", authMiddleware(FilesHandler(&view, "in"))).Methods("GET")
+	s.Handle("/ok-tests/{problem-id}", authMiddleware(FilesHandler(&view, "ok"))).Methods("GET")
+	s.Handle("/sources/{problem-id}", authMiddleware(FilesHandler(&view, "cpp"))).Methods("GET")
 
-	s.Handle("/delete-test/{f-id}", authMiddleware(DeleteTestHandler(&view))).Methods("DELETE")
+	s.Handle("/delete-file/{f-id}", authMiddleware(DeleteFileHandler(&view))).Methods("DELETE")
 
 	headersOk := handlers.AllowedHeaders([]string{"X-Requested-With", "Authorization", "X-Auth-Key", "X-Auth-Secret", "Content-Type"})
 	originsOk := handlers.AllowedOrigins([]string{"*"})
@@ -555,18 +556,18 @@ func UpdateProblemHandler(view *View) http.Handler {
 	})
 }
 
-// Uploads tests for a specific Problem
-func UploadTestsHandler(view *View) http.Handler {
+// Uploads files for a specific Problem
+func UploadFilesHandler(view *View) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if err := r.ParseMultipartForm((1 << 20) * 100); err != nil {
 			log.Println(err)
 			http.Error(w, err.Error(), 500)
 		}
 
-		// Go through all the uploaded tests
+		// Go through all the uploaded files
 		for k, v := range r.Form {
-			testName := k
-			testContent := string(v[0])
+			fileName := k
+			fileContent := string(v[0])
 
 			// Get a Seaweed file ID
 			fId, err := view.Controller.GetSeaweedId()
@@ -576,8 +577,8 @@ func UploadTestsHandler(view *View) http.Handler {
 				return
 			}
 
-			// Do a POST request to Seaweed to save the test in the filesyste2
-			seaweedResponse, err := view.Controller.SeaweedPostTest(testName, testContent, fId)
+			// Do a POST request to Seaweed to save the file in the filesyste2
+			seaweedResponse, err := view.Controller.SeaweedPost(fileName, fileContent, fId)
 			if err != nil {
 				log.Println(err)
 				http.Error(w, err.Error(), 500)
@@ -596,8 +597,8 @@ func UploadTestsHandler(view *View) http.Handler {
 			vars := mux.Vars(r)
 			problemId := vars["problem-id"]
 
-			// Add the test in the storage
-			err = view.Controller.AddTestInStorage(problemId, fId, testName)
+			// Add the file in the storage
+			err = view.Controller.AddFileInStorage(problemId, fId, fileName)
 			if err != nil {
 				log.Println(err)
 				http.Error(w, err.Error(), 500)
@@ -607,8 +608,8 @@ func UploadTestsHandler(view *View) http.Handler {
 	})
 }
 
-// Returns a list of Tests for given a problem ID
-func TestsHandler(view *View, terminationString string) http.Handler {
+// Returns a list of files for given a problem ID
+func FilesHandler(view *View, terminationString string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 
@@ -635,35 +636,33 @@ func TestsHandler(view *View, terminationString string) http.Handler {
 				return
 			}
 
-			// Get the tests from the storage
-			if tests, err := view.Controller.GetTestsForProblem(problemId, terminationString); err != nil {
+			// Get the files from the storage
+			if files, err := view.Controller.GetFilesForProblem(problemId, terminationString); err != nil {
 				log.Println(err)
 				http.Error(w, err.Error(), 500)
 			} else {
-				log.Println(tests)
-				payload, _ := json.Marshal(tests)
+				payload, _ := json.Marshal(files)
 				w.Write([]byte(payload))
 			}
 		}
 	})
 }
 
-// Deletes a Test given a file ID
-func DeleteTestHandler(view *View) http.Handler {
+// Deletes a file given a file ID
+func DeleteFileHandler(view *View) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		log.Println("1")
 
-		// Get the test ID from the URI
+		// Get the file ID from the URI
 		vars := mux.Vars(r)
 		fId := vars["f-id"]
 
-		// Get the test from the storage
-		if test, err := view.Controller.GetTestWithId(fId); err != nil {
+		// Get the file from the storage
+		if file, err := view.Controller.GetFileWithId(fId); err != nil {
 			log.Println(err)
 			http.Error(w, err.Error(), 500)
 		} else {
-			problemId := test.ProblemId
+			problemId := file.ProblemId
 
 			// Get the problem from the storage
 			if problem, err := view.Controller.GetProblemWithId(problemId); err != nil {
@@ -685,12 +684,12 @@ func DeleteTestHandler(view *View) http.Handler {
 				}
 
 				// Delete the problem from the storage
-				if err := view.Controller.DeleteTestWithId(fId); err != nil {
+				if err := view.Controller.DeleteFileWithId(fId); err != nil {
 					log.Println(err)
 					http.Error(w, err.Error(), 500)
 				}
 
-				// Do a DELETE request to Seaweed to delete the test from the filesystem
+				// Do a DELETE request to Seaweed to delete the file from the filesystem
 				seaweedResponse, err := view.Controller.SeaweedDelete(fId)
 				if err != nil {
 					log.Println(err)
