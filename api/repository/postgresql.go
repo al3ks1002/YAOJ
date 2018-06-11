@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"log"
+
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 
@@ -26,6 +28,7 @@ func (db *PostgreSQL) Init() error {
 	if err := db.createTablesIfNonExistant(); err != nil {
 		return err
 	}
+	log.Println("Database started")
 
 	return nil
 }
@@ -56,6 +59,15 @@ var schema = `
 		f_id TEXT NOT NULL,
 		PRIMARY KEY (file_name, problem_id)
 	);
+
+	CREATE TABLE IF NOT EXISTS submissions (
+		id SERIAL NOT NULL PRIMARY KEY,
+		user_id TEXT NOT NULL,
+		problem_id TEXT NOT NULL,
+		f_id TEXT NOT NULL,
+		status TEXT NOT NULL,
+		timestamp TIMESTAMPTZ NOT NULL
+	);
 `
 
 func (db *PostgreSQL) createTablesIfNonExistant() error {
@@ -72,10 +84,25 @@ func (db *PostgreSQL) HandleLogin(user *model.User) error {
 	return nil
 }
 
+func (db *PostgreSQL) GetUserNameFromId(userId string) (string, error) {
+	var userName string
+	if err := db.dbConn.Get(&userName, "SELECT name FROM users WHERE id = $1", userId); err != nil {
+		return "", err
+	}
+	return userName, nil
+}
+
 func (db *PostgreSQL) GetPublicContests() ([]model.Contest, error) {
 	contests := []model.Contest{}
 	if err := db.dbConn.Select(&contests, "SELECT * FROM contests WHERE is_public = true"); err != nil {
 		return nil, err
+	}
+	for i, contest := range contests {
+		if userName, err := db.GetUserNameFromId(contest.OwnerId); err != nil {
+			return nil, err
+		} else {
+			contests[i].UserName = userName
+		}
 	}
 	return contests, nil
 }
@@ -84,6 +111,13 @@ func (db *PostgreSQL) GetUserContests(userId string) ([]model.Contest, error) {
 	contests := []model.Contest{}
 	if err := db.dbConn.Select(&contests, "SELECT * FROM contests WHERE owner_id = $1", userId); err != nil {
 		return nil, err
+	}
+	for i, contest := range contests {
+		if userName, err := db.GetUserNameFromId(contest.OwnerId); err != nil {
+			return nil, err
+		} else {
+			contests[i].UserName = userName
+		}
 	}
 	return contests, nil
 }
@@ -193,4 +227,26 @@ func (db *PostgreSQL) DeleteFileWithId(fId string) error {
 		return err
 	}
 	return nil
+}
+
+func (db *PostgreSQL) AddSubmission(submission *model.Submission) error {
+	if _, err := db.dbConn.NamedExec("INSERT INTO submissions (user_id, problem_id, f_id, status, timestamp) VALUES (:user_id, :problem_id, :f_id, :status, :timestamp)", submission); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (db *PostgreSQL) GetSubmissionsForProblem(problemId string) ([]model.Submission, error) {
+	submissions := []model.Submission{}
+	if err := db.dbConn.Select(&submissions, "SELECT * FROM submissions WHERE problem_id = $1", problemId); err != nil {
+		return nil, err
+	}
+	for i, submission := range submissions {
+		if userName, err := db.GetUserNameFromId(submission.UserId); err != nil {
+			return nil, err
+		} else {
+			submissions[i].UserName = userName
+		}
+	}
+	return submissions, nil
 }

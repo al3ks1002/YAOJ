@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
+	"time"
 
 	"../model"
 	"../repository"
@@ -153,4 +154,16 @@ func (ctrl *Controller) GetFileWithId(fId string) (*model.File, error) {
 
 func (ctrl *Controller) DeleteFileWithId(fId string) error {
 	return ctrl.Repository.DeleteFileWithId(fId)
+}
+
+func (ctrl *Controller) AddSubmissionToStorage(userId string, problemId string, fId string) error {
+	return ctrl.Repository.AddSubmission(&model.Submission{UserId: userId, ProblemId: problemId, FId: fId, Status: "In queue", Timestamp: time.Now()})
+}
+
+func (ctrl *Controller) RunSubmission(fId string) error {
+	return nil
+}
+
+func (ctrl *Controller) GetSubmissionsForProblem(problemId string) ([]model.Submission, error) {
+	return ctrl.Repository.GetSubmissionsForProblem(problemId)
 }

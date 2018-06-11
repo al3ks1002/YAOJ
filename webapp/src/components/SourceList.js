@@ -7,6 +7,7 @@ import Styles from "../utils/styles.js";
 import * as AxiosUtils from "../utils/axios.js";
 
 import SourceRow from "../components/SourceRow.js";
+import history from "../utils/history";
 
 class SourceList extends Component {
   constructor(props) {
@@ -22,6 +23,7 @@ class SourceList extends Component {
     };
 
     this.deleteSourceCallback = this.deleteSourceCallback.bind(this);
+    this.executeSourceCallback = this.executeSourceCallback.bind(this);
   }
 
   fetchSources() {
@@ -80,6 +82,18 @@ class SourceList extends Component {
       });
   }
 
+  executeSourceCallback(fId) {
+    AxiosUtils.executeSource(fId)
+      .then(result => {
+        history.push("/submissions/" + this.state.problemId);
+      })
+      .catch(error => {
+        this.setState({
+          error: error
+        });
+      });
+  }
+
   render() {
     if (this.state.error) {
       throw this.state.error;
@@ -93,6 +107,7 @@ class SourceList extends Component {
               <tr>
                 <th>Name</th>
                 <th>Delete</th>
+                <th>Run</th>
               </tr>
             </thead>
             <tbody>
@@ -105,6 +120,7 @@ class SourceList extends Component {
                       name={source.FileName}
                       fId={source.FId}
                       deleteSourceCallback={this.deleteSourceCallback}
+                      executeSourceCallback={this.executeSourceCallback}
                     />
                   );
                 })}

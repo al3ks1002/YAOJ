@@ -142,3 +142,13 @@ export function getSources(problemId) {
   setupAuthorizationHeader();
   return axios.get(ApiUrl + "sources/" + problemId);
 }
+
+export function executeSource(fId) {
+  setupAuthorizationHeader();
+  return axios.post(ApiUrl + "execute/" + fId);
+}
+
+export function getSubmissions(problemId) {
+  setupAuthorizationHeader();
+  return axios.get(ApiUrl + "submissions/" + problemId);
+}

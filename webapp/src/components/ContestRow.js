@@ -8,6 +8,7 @@ class ContestRow extends Component {
         <td>
           <a href={"/contest/" + this.props.id}>{this.props.name}</a>
         </td>
+        <td> {this.props.userName} </td>
       </tr>
     );
   }

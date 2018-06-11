@@ -11,8 +11,15 @@ class SourceRow extends Component {
           </a>
         </td>
         <td>
-          <Button onClick={() => this.props.deleteSourceCallback(this.props.fId)}>
+          <Button
+            onClick={() => this.props.deleteSourceCallback(this.props.fId)}
+          >
             x
+          </Button>
+        </td>
+        <td>
+          <Button onClick={() => this.props.executeSourceCallback(this.props.fId)}>
+            Run
           </Button>
         </td>
       </tr>

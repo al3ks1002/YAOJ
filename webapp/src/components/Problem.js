@@ -20,6 +20,7 @@ class Problem extends Component {
     this.handleUpdateProblem = this.handleUpdateProblem.bind(this);
     this.handleUploadTests = this.handleUploadTests.bind(this);
     this.handleUploadSources = this.handleUploadSources.bind(this);
+    this.handleSeeSubmissions = this.handleSeeSubmissions.bind(this);
     this.sendFilesRequest = this.sendFilesRequest.bind(this);
 
     this.state = {
@@ -55,6 +56,10 @@ class Problem extends Component {
 
   handleUpdateProblem() {
     history.push("/update-problem/" + this.state.id);
+  }
+
+  handleSeeSubmissions() {
+    history.push("/submissions/" + this.state.id);
   }
 
   onTestsDrop(files) {
@@ -210,17 +215,16 @@ class Problem extends Component {
                 </Button>
               </div>
             )}
+            <br />
+            <Button onClick={this.handleSeeSubmissions}>Submissions</Button>
           </div>
           {this.isMyContest(this.state.contest) && (
             <div>
               <div style={Styles.flex}>
                 <Dropzone onDrop={this.onTestsDrop.bind(this)}>
-                  <p>
-                    Upload tests.
-                    <br />
-                    <br />
-                    Only .in and .ok files are accepted.
-                  </p>
+                  <p>Upload tests.</p>
+                  <br />
+                  <p>Only .in and .ok files are accepted.</p>
                 </Dropzone>
                 <aside>
                   <h2>Dropped tests</h2>
@@ -245,10 +249,9 @@ class Problem extends Component {
               <br />
               <div style={Styles.flex}>
                 <Dropzone onDrop={this.onSourcesDrop.bind(this)}>
-                  <p>
-                    Upload source code.<br />
-                    <br />Only .cpp files are accepted.
-                  </p>
+                  <p>Upload source code.</p>
+                  <br />
+                  <p>Only .cpp files are accepted.</p>
                 </Dropzone>
                 <aside>
                   <h2>Dropped sources</h2>

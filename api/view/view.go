@@ -37,6 +37,7 @@ func (view View) Start() {
 	s.Handle("/contest/{contest-id}", authMiddleware(ContestHandler(&view))).Methods("GET")
 	s.Handle("/problems/{contest-id}", authMiddleware(ProblemsHandler(&view))).Methods("GET")
 	s.Handle("/problem/{problem-id}", authMiddleware(ProblemHandler(&view))).Methods("GET")
+	s.Handle("/submissions/{problem-id}", authMiddleware(SubmissionsHandler(&view))).Methods("GET")
 
 	s.Handle("/new-contest", authMiddleware(NewContestHandler(&view))).Methods("POST")
 	s.Handle("/new-problem/{contest-id}", authMiddleware(NewProblemHandler(&view))).Methods("POST")
@@ -54,6 +55,8 @@ func (view View) Start() {
 	s.Handle("/sources/{problem-id}", authMiddleware(FilesHandler(&view, "cpp"))).Methods("GET")
 
 	s.Handle("/delete-file/{f-id}", authMiddleware(DeleteFileHandler(&view))).Methods("DELETE")
+
+	s.Handle("/execute/{f-id}", authMiddleware(ExecuteHandler(&view))).Methods("POST")
 
 	headersOk := handlers.AllowedHeaders([]string{"X-Requested-With", "Authorization", "X-Auth-Key", "X-Auth-Secret", "Content-Type"})
 	originsOk := handlers.AllowedOrigins([]string{"*"})
@@ -703,6 +706,96 @@ func DeleteFileHandler(view *View) http.Handler {
 					log.Println(err)
 					http.Error(w, err, seaweedResponse.StatusCode)
 					return
+				}
+			}
+		}
+	})
+}
+
+// Execute a source given with a file id
+func ExecuteHandler(view *View) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+
+		// Get the file ID from the URI
+		vars := mux.Vars(r)
+		fId := vars["f-id"]
+
+		// Get the file from the storage
+		if file, err := view.Controller.GetFileWithId(fId); err != nil {
+			log.Println(err)
+			http.Error(w, err.Error(), 500)
+		} else {
+			problemId := file.ProblemId
+
+			// Get the problem from the storage
+			if problem, err := view.Controller.GetProblemWithId(problemId); err != nil {
+				log.Println(err)
+				http.Error(w, err.Error(), 500)
+			} else {
+				// Get the sender ID from the request
+				senderId := context.Get(r, "senderId").(string)
+
+				// Get the contest ID from the problem
+				contestId := problem.ContestId
+
+				// Verify if the sender is the owner of the problem
+				if !view.Controller.IsPublic(contestId) && !view.Controller.IsMyContest(senderId, contestId) {
+					err := "Not an owner of the problem"
+					log.Println(err)
+					http.Error(w, err, 403)
+					return
+				}
+
+				// Add the submission in the storage
+				if err := view.Controller.AddSubmissionToStorage(senderId, problemId, fId); err != nil {
+					log.Println(err)
+					http.Error(w, err.Error(), 500)
+				}
+
+				// Run the submission
+				if err := view.Controller.RunSubmission(fId); err != nil {
+					log.Println(err)
+					http.Error(w, err.Error(), 500)
+				}
+			}
+		}
+	})
+}
+
+// Gets a list of Submissions for a given problem
+func SubmissionsHandler(view *View) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+
+		// Get the problem ID from the URI
+		vars := mux.Vars(r)
+		problemId := vars["problem-id"]
+
+		// Get the problem from the storage
+		if problem, err := view.Controller.GetProblemWithId(problemId); err != nil {
+			log.Println(err)
+			http.Error(w, err.Error(), 500)
+		} else {
+			// Get the sender ID from the request
+			senderId := context.Get(r, "senderId").(string)
+
+			// Get the contest ID from the problem
+			contestId := problem.ContestId
+
+			// Verify if the contest is public or if the sender is the owner of the contest
+			if !view.Controller.IsPublic(contestId) && !view.Controller.IsMyContest(senderId, contestId) {
+				err := "Not an owner of the contest"
+				log.Println(err)
+				http.Error(w, err, 403)
+			} else {
+				// Get the submissions from the storage
+				if submissions, err := view.Controller.GetSubmissionsForProblem(problemId); err != nil {
+					log.Println(err)
+					http.Error(w, err.Error(), 500)
+				} else {
+					payload, _ := json.Marshal(submissions)
+					w.Write([]byte(payload))
 				}
 			}
 		}

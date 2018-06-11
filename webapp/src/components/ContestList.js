@@ -51,11 +51,12 @@ class ContestList extends Component {
             <tr>
               <th>#</th>
               <th>Name</th>
+              <th>User</th>
             </tr>
           </thead>
           <tbody>
             {this.state.contests.map(function(contest, i) {
-              return <ContestRow key={i} id={contest.Id} name={contest.Name} />;
+              return <ContestRow key={i} id={contest.Id} name={contest.Name} userName={contest.UserName} />;
             })}
           </tbody>
         </Table>

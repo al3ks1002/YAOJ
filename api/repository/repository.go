@@ -7,6 +7,7 @@ import (
 type Repository interface {
 	Init() error
 	HandleLogin(*model.User) error
+	GetUserNameFromId(string) (string, error)
 	GetPublicContests() ([]model.Contest, error)
 	GetUserContests(userId string) ([]model.Contest, error)
 	AddNewContest(*model.Contest) error
@@ -22,4 +23,6 @@ type Repository interface {
 	GetFilesForProblem(string, string) ([]model.File, error)
 	GetFileWithId(string) (*model.File, error)
 	DeleteFileWithId(string) error
+	AddSubmission(*model.Submission) error
+	GetSubmissionsForProblem(string) ([]model.Submission, error)
 }
