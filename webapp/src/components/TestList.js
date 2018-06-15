@@ -111,7 +111,10 @@ class TestList extends Component {
             </thead>
             <tbody>
               {this.state.inTests
-                .sort((a, b) => a.FileName > b.FileName)
+                .sort(
+                  (a, b) =>
+                    (a.FileName > b.FileName) - (a.FileName < b.FileName)
+                )
                 .map((test, i) => {
                   return (
                     <TestRow
@@ -134,7 +137,10 @@ class TestList extends Component {
               </thead>
               <tbody>
                 {this.state.okTests
-                  .sort((a, b) => a.FileName > b.FileName)
+                  .sort(
+                    (a, b) =>
+                      (a.FileName > b.FileName) - (a.FileName < b.FileName)
+                  )
                   .map((test, i) => {
                     return (
                       <TestRow

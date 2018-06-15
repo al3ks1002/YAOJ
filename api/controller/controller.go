@@ -4,16 +4,20 @@ import (
 	"bytes"
 	"encoding/json"
 	"io/ioutil"
+	"log"
 	"mime/multipart"
 	"net/http"
+	"strings"
 	"time"
 
+	"../judge"
 	"../model"
 	"../repository"
 )
 
 type Controller struct {
 	Repository repository.Repository
+	Judge      judge.Judge
 }
 
 func (ctrl *Controller) GetPublicContests() ([]model.Contest, error) {
@@ -156,11 +160,128 @@ func (ctrl *Controller) DeleteFileWithId(fId string) error {
 	return ctrl.Repository.DeleteFileWithId(fId)
 }
 
-func (ctrl *Controller) AddSubmissionToStorage(userId string, problemId string, fId string) error {
+func (ctrl *Controller) AddSubmissionToStorage(userId string, problemId string, fId string) (string, error) {
 	return ctrl.Repository.AddSubmission(&model.Submission{UserId: userId, ProblemId: problemId, FId: fId, Status: "In queue", Timestamp: time.Now()})
 }
 
-func (ctrl *Controller) RunSubmission(fId string) error {
+func (ctrl *Controller) GetContentFromFId(fId string) (string, error) {
+	resp, err := http.Get(SeaweedVolume + fId)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	fileContent, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+	return string(fileContent), nil
+}
+
+func (ctrl *Controller) RunSubmission(submissionId string, fId string, problemId string) error {
+	// Get the source content from Seaweed
+	sourceContent, err := ctrl.GetContentFromFId(fId)
+	if err != nil {
+		return err
+	}
+
+	// Prepare the source
+	sourcePath := "/tmp/" + submissionId + ".cpp"
+	binaryPath := "/tmp/" + submissionId + ".bin"
+	err = ctrl.Judge.WriteContentToFile(sourcePath, sourceContent)
+	if err != nil {
+		return err
+	}
+
+	// Update submission status to 'Compiling'
+	err = ctrl.Repository.UpdateSubmissionStatus(submissionId, "Compiling")
+	if err != nil {
+		return err
+	}
+
+	// Compile
+	err = ctrl.Judge.Compile(sourcePath, binaryPath)
+	if err != nil {
+		// Update submission status to 'Compilation error'
+		err = ctrl.Repository.UpdateSubmissionStatus(submissionId, "Compilation eror")
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+
+	// Get the timelimit
+	timelimit, err := ctrl.Repository.GetTimelimit(problemId)
+	if err != nil {
+		return err
+	}
+
+	// Prepare the tests
+	inTests, err := ctrl.Repository.GetFilesForProblem(problemId, "in")
+	if err != nil {
+		return err
+	}
+	inTestsMap := map[string]string{}
+	for _, inTest := range inTests {
+		inTestsMap[strings.TrimSuffix(inTest.FileName, ".in")] = inTest.FId
+	}
+	okTests, err := ctrl.Repository.GetFilesForProblem(problemId, "ok")
+	if err != nil {
+		return err
+	}
+	okTestsMap := map[string]string{}
+	for _, okTest := range okTests {
+		okTestsMap[strings.TrimSuffix(okTest.FileName, ".ok")] = okTest.FId
+	}
+
+	// Run the source code on every test
+	for testName := range inTestsMap {
+		inTestFId := inTestsMap[testName]
+		okTestFId, ok := okTestsMap[testName]
+		if !ok {
+			continue
+		}
+
+		// Get test contents
+		inTestContent, err := ctrl.GetContentFromFId(inTestFId)
+		if err != nil {
+			return err
+		}
+		okTestContent, err := ctrl.GetContentFromFId(okTestFId)
+		if err != nil {
+			return err
+		}
+
+		// Running on test name
+		err = ctrl.Repository.UpdateSubmissionStatus(submissionId, "Running on "+testName+".in")
+		if err != nil {
+			return err
+		}
+
+		log.Println("Running on " + testName + ".in")
+		// Run
+		status, err := ctrl.Judge.Run(binaryPath, timelimit, inTestContent, okTestContent)
+		if err != nil {
+			// Update submission status
+			err = ctrl.Repository.UpdateSubmissionStatus(submissionId, status)
+			if err != nil {
+				return err
+			}
+			return nil
+		}
+
+		if status != "Accepted" {
+			log.Println(status)
+			err = ctrl.Repository.UpdateSubmissionStatus(submissionId, status+" on "+testName+".in")
+			return nil
+		}
+	}
+
+	// Update submission status
+	err = ctrl.Repository.UpdateSubmissionStatus(submissionId, "Accepted")
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 

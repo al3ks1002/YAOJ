@@ -23,6 +23,8 @@ type Repository interface {
 	GetFilesForProblem(string, string) ([]model.File, error)
 	GetFileWithId(string) (*model.File, error)
 	DeleteFileWithId(string) error
-	AddSubmission(*model.Submission) error
+	AddSubmission(*model.Submission) (string, error)
 	GetSubmissionsForProblem(string) ([]model.Submission, error)
+	UpdateSubmissionStatus(string, string) error
+	GetTimelimit(string) (int64, error)
 }

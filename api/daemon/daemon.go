@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"../controller"
+	"../judge"
 	"../repository"
 	"../view"
 )
@@ -22,7 +23,8 @@ func Run(daemonConfig *Config) error {
 	}
 
 	var repo repository.Repository = &postgreSQLRepo
-	ctrl := controller.Controller{repo}
+	judge := judge.Judge{}
+	ctrl := controller.Controller{repo, judge}
 
 	ui := view.View{daemonConfig.Port, &ctrl}
 	ui.Start()

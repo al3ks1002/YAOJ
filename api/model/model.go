@@ -20,6 +20,7 @@ type Problem struct {
 	ContestId   string `db:"contest_id"`
 	Name        string
 	Description string
+	Timelimit   int64 `json:"Timelimit,string"`
 }
 
 type File struct {

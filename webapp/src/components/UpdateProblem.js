@@ -14,11 +14,15 @@ class UpdateProblem extends Component {
       contest: null,
       problemName: "",
       problemDescription: "",
+      problemTimelimit: "",
       error: null
     };
 
     this.handleProblemNameChange = this.handleProblemNameChange.bind(this);
     this.handleProblemDescriptionChange = this.handleProblemDescriptionChange.bind(
+      this
+    );
+    this.handleProblemTimelimitChange = this.handleProblemTimelimitChange.bind(
       this
     );
   }
@@ -43,7 +47,8 @@ class UpdateProblem extends Component {
           const problem = result.data;
           this.setState({
             problemName: problem.Name,
-            problemDescription: problem.Description
+            problemDescription: problem.Description,
+            problemTimelimit: problem.Timelimit
           });
 
           AxiosUtils.getContest(problem.ContestId)
@@ -89,6 +94,12 @@ class UpdateProblem extends Component {
     });
   }
 
+  handleProblemTimelimitChange(event) {
+    this.setState({
+      problemTimelimit: event.target.value
+    });
+  }
+
   getNameValidationState() {
     const length = this.state.problemName.length;
     if (length > 0 && length < 50) {
@@ -100,6 +111,14 @@ class UpdateProblem extends Component {
   getDescriptionValidationState() {
     const length = this.state.problemDescription.length;
     if (length > 0 && length < 1000) {
+      return "success";
+    }
+    return "error";
+  }
+
+  getTimelimitValidationState() {
+    var timelimitInt = parseInt(this.state.problemTimelimit, 10);
+    if (timelimitInt >= 100 && timelimitInt <= 10000) {
       return "success";
     }
     return "error";
@@ -118,10 +137,16 @@ class UpdateProblem extends Component {
       return;
     }
 
+    const timelimitValidationState = this.getTimelimitValidationState();
+    if (timelimitValidationState === "error") {
+      return;
+    }
+
     AxiosUtils.updateProblem(
       this.state.problemId,
       this.state.problemName,
-      this.state.problemDescription
+      this.state.problemDescription,
+      this.state.problemTimelimit
     )
       .then(result => {
         history.goBack();
@@ -168,6 +193,22 @@ class UpdateProblem extends Component {
             Description name must be between 1 and 1000 characters.
           </HelpBlock>
         </FormGroup>
+        <FormGroup
+          controlId="formBasicText"
+          validationState={this.getTimelimitValidationState()}
+        >
+          <FormControl
+            type="number"
+            value={this.state.problemTimelimit}
+            placeholder="Problem timelimit"
+            onChange={this.handleProblemTimelimitChange}
+          />
+          <FormControl.Feedback />
+          <HelpBlock>
+            Timelimit must be between 100 and 10000 (in ms).
+          </HelpBlock>
+        </FormGroup>
+
         <Button type="submit">Submit</Button>
       </form>
     );

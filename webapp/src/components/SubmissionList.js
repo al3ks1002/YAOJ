@@ -95,19 +95,22 @@ class SubmissionList extends Component {
             </tr>
           </thead>
           <tbody>
-            {this.state.submissions.map(function(submission, i) {
-              return (
-                <SubmissionRow
-                  key={i}
-                  id={submission.Id}
-                  userId={submission.UserId}
-                  userName={submission.UserName}
-                  fId={submission.FId}
-                  status={submission.Status}
-                  timestamp={submission.Timestamp}
-                />
-              );
-            })}
+            {this.state.submissions
+              .sort((a, b) => new Date(a.Timestamp) - new Date(b.Timestamp))
+              .map((submission, i) => {
+                console.log(submission.Timestamp);
+                return (
+                  <SubmissionRow
+                    key={i}
+                    id={submission.Id}
+                    userId={submission.UserId}
+                    userName={submission.UserName}
+                    fId={submission.FId}
+                    status={submission.Status}
+                    timestamp={submission.Timestamp}
+                  />
+                );
+              })}
           </tbody>
         </Table>
       );

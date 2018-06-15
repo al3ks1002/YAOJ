@@ -199,6 +199,7 @@ class Problem extends Component {
                   <h4>Problem: {this.state.problem.Name}</h4>
                 </div>
                 <br />
+                <p>Timelimit: {this.state.problem.Timelimit} ms</p>
                 <Well>{this.state.problem.Description}</Well>
               </Panel.Body>
             </Panel>

@@ -83,25 +83,37 @@ export function updateContest(contestId, isPublic, contestName) {
   }
 }
 
-export function addProblem(contestId, problemName, problemDescription) {
+export function addProblem(
+  contestId,
+  problemName,
+  problemDescription,
+  problemTimelimit
+) {
   setupAuthorizationHeader();
   try {
     const userId = LocalStorageUtils.getUserId();
     return axios.post(ApiUrl + "new-problem/" + contestId, {
       userId: userId,
       name: problemName,
-      description: problemDescription
+      description: problemDescription,
+      timelimit: problemTimelimit
     });
   } catch (error) {
     throw error;
   }
 }
 
-export function updateProblem(problemId, problemName, problemDescription) {
+export function updateProblem(
+  problemId,
+  problemName,
+  problemDescription,
+  problemTimelimit
+) {
   setupAuthorizationHeader();
   return axios.post(ApiUrl + "update-problem/" + problemId, {
     name: problemName,
-    description: problemDescription
+    description: problemDescription,
+    timelimit: problemTimelimit
   });
 }
 

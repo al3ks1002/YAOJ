@@ -50,7 +50,8 @@ var schema = `
 		id SERIAL NOT NULL PRIMARY KEY,
 		contest_id TEXT NOT NULL,
 		name TEXT NOT NULL,
-		description TEXT NOT NULL
+		description TEXT NOT NULL,
+		timelimit INTEGER DEFAULT 1000
 	);
 
 	CREATE TABLE IF NOT EXISTS files (
@@ -138,7 +139,7 @@ func (db *PostgreSQL) GetContestWithId(contestId string) (*model.Contest, error)
 }
 
 func (db *PostgreSQL) AddNewProblem(problem *model.Problem) error {
-	if _, err := db.dbConn.NamedExec("INSERT INTO problems (contest_id, name, description) VALUES (:contest_id, :name, :description)", problem); err != nil {
+	if _, err := db.dbConn.NamedExec("INSERT INTO problems (contest_id, name, description, timelimit) VALUES (:contest_id, :name, :description, :timelimit)", problem); err != nil {
 		return err
 	}
 	return nil
@@ -182,7 +183,7 @@ func (db *PostgreSQL) UpdateContest(contest *model.Contest) error {
 }
 
 func (db *PostgreSQL) UpdateProblem(problem *model.Problem) error {
-	if _, err := db.dbConn.NamedExec("UPDATE problems SET name = :name, description = :description WHERE id = :id", problem); err != nil {
+	if _, err := db.dbConn.NamedExec("UPDATE problems SET name = :name, description = :description, timelimit = :timelimit WHERE id = :id", problem); err != nil {
 		return err
 	}
 	return nil
@@ -229,11 +230,19 @@ func (db *PostgreSQL) DeleteFileWithId(fId string) error {
 	return nil
 }
 
-func (db *PostgreSQL) AddSubmission(submission *model.Submission) error {
-	if _, err := db.dbConn.NamedExec("INSERT INTO submissions (user_id, problem_id, f_id, status, timestamp) VALUES (:user_id, :problem_id, :f_id, :status, :timestamp)", submission); err != nil {
-		return err
+func (db *PostgreSQL) AddSubmission(submission *model.Submission) (string, error) {
+	query := "INSERT INTO submissions (user_id, problem_id, f_id, status, timestamp) VALUES ($1, $2, $3, $4, $5) RETURNING id"
+	stmt, err := db.dbConn.Prepare(query)
+	if err != nil {
+		return "", err
 	}
-	return nil
+	defer stmt.Close()
+	var submissionId string
+	err = stmt.QueryRow(submission.UserId, submission.ProblemId, submission.FId, submission.Status, submission.Timestamp).Scan(&submissionId)
+	if err != nil {
+		return "", err
+	}
+	return submissionId, nil
 }
 
 func (db *PostgreSQL) GetSubmissionsForProblem(problemId string) ([]model.Submission, error) {
@@ -249,4 +258,19 @@ func (db *PostgreSQL) GetSubmissionsForProblem(problemId string) ([]model.Submis
 		}
 	}
 	return submissions, nil
+}
+
+func (db *PostgreSQL) UpdateSubmissionStatus(submissionId string, newStatus string) error {
+	if _, err := db.dbConn.Exec("UPDATE submissions SET status = $1 WHERE id = $2", newStatus, submissionId); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (db *PostgreSQL) GetTimelimit(problemId string) (int64, error) {
+	var timelimit int64
+	if err := db.dbConn.Get(&timelimit, "SELECT timelimit FROM problems WHERE id = $1", problemId); err != nil {
+		return 0, err
+	}
+	return timelimit, nil
 }

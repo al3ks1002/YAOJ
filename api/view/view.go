@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 
 	"github.com/auth0-community/auth0"
 	"github.com/gorilla/context"
@@ -359,8 +360,24 @@ func NewProblemHandler(view *View) http.Handler {
 			return
 		}
 
+		// Get the problem timelimit from the request
+		problemTimelimitString, ok := requestMap["timelimit"].(string)
+		if !ok {
+			err := "Could not find timelimit in request"
+			log.Println(err)
+			http.Error(w, err, 500)
+			return
+		}
+		problemTimelimit, err := strconv.Atoi(problemTimelimitString)
+		if err != nil {
+			err := "Could not convert the timelimit to int"
+			log.Println(err)
+			http.Error(w, err, 500)
+			return
+		}
+
 		// Build the Problem struct and persist the change in the storage
-		problem := model.Problem{ContestId: contestId, Name: problemName, Description: problemDescription}
+		problem := model.Problem{ContestId: contestId, Name: problemName, Description: problemDescription, Timelimit: int64(problemTimelimit)}
 		if err := view.Controller.AddNewProblem(&problem); err != nil {
 			log.Println(err)
 			http.Error(w, err.Error(), 500)
@@ -518,6 +535,7 @@ func UpdateProblemHandler(view *View) http.Handler {
 		// Decode the problem from the request
 		if err := dec.Decode(&problem); err != nil {
 			log.Println(err)
+			log.Println("mlc")
 			http.Error(w, err.Error(), 500)
 			return
 		}
@@ -748,13 +766,15 @@ func ExecuteHandler(view *View) http.Handler {
 				}
 
 				// Add the submission in the storage
-				if err := view.Controller.AddSubmissionToStorage(senderId, problemId, fId); err != nil {
+				submissionId, err := view.Controller.AddSubmissionToStorage(senderId, problemId, fId)
+				if err != nil {
 					log.Println(err)
 					http.Error(w, err.Error(), 500)
+					return
 				}
 
 				// Run the submission
-				if err := view.Controller.RunSubmission(fId); err != nil {
+				if err := view.Controller.RunSubmission(submissionId, fId, problemId); err != nil {
 					log.Println(err)
 					http.Error(w, err.Error(), 500)
 				}
