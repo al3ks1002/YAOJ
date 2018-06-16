@@ -108,6 +108,7 @@ class SubmissionList extends Component {
                     fId={submission.FId}
                     status={submission.Status}
                     timestamp={submission.Timestamp}
+                    contestOwnerId={this.state.contest.OwnerId}
                   />
                 );
               })}

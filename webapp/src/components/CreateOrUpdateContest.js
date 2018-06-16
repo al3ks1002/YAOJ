@@ -7,6 +7,9 @@ import {
   HelpBlock
 } from "react-bootstrap";
 
+import * as Datetime from "react-datetime";
+import "../assets/datepicker.css";
+
 import * as AxiosUtils from "../utils/axios.js";
 import * as LocalStorageUtils from "../utils/localStorage.js";
 import history from "../utils/history";
@@ -20,11 +23,15 @@ class CreateOrUpdateContest extends Component {
       id: null,
       isPublic: false,
       contestName: "",
+      startTime: "",
+      endTime: "",
       error: null
     };
 
     this.handleContestNameChange = this.handleContestNameChange.bind(this);
     this.handleIsPublicChange = this.handleIsPublicChange.bind(this);
+    this.handleStartTimeChange = this.handleStartTimeChange.bind(this);
+    this.handleEndTimeChange = this.handleEndTimeChange.bind(this);
   }
 
   isMyContest(contest) {
@@ -53,7 +60,9 @@ class CreateOrUpdateContest extends Component {
             } else {
               this.setState({
                 isPublic: contest.IsPublic,
-                contestName: contest.Name
+                contestName: contest.Name,
+                startTime: contest.StartTime,
+                endTime: contest.EndTime
               });
             }
           })
@@ -82,12 +91,38 @@ class CreateOrUpdateContest extends Component {
     });
   }
 
+  handleStartTimeChange(date) {
+    this.setState({
+      startTime: date
+    });
+  }
+
+  handleEndTimeChange(date) {
+    this.setState({
+      endTime: date
+    });
+  }
+
   getValidationState() {
     const length = this.state.contestName.length;
     if (length > 0 && length < 50) {
       return "success";
     }
     return "error";
+  }
+
+  validateDates() {
+    const startDate = new Date(this.state.startTime);
+    const endDate = new Date(this.state.endTime);
+
+    if (
+      startDate.toString() === "Invalid Date" ||
+      endDate.toString() === "Invalid Date" ||
+      startDate > endDate
+    ) {
+      return false;
+    }
+    return true;
   }
 
   handleSubmit(event) {
@@ -98,8 +133,17 @@ class CreateOrUpdateContest extends Component {
       return;
     }
 
+    if (!this.validateDates()) {
+      return;
+    }
+
     if (this.state.isNew) {
-      AxiosUtils.addContest(this.state.isPublic, this.state.contestName)
+      AxiosUtils.addContest(
+        this.state.isPublic,
+        this.state.contestName,
+        this.state.startTime,
+        this.state.endTime
+      )
         .then(result => {
           history.push("/my-contests");
         })
@@ -107,7 +151,13 @@ class CreateOrUpdateContest extends Component {
           this.setState({ error: error });
         });
     } else {
-      AxiosUtils.updateContest(this.state.id, this.state.isPublic, this.state.contestName)
+      AxiosUtils.updateContest(
+        this.state.id,
+        this.state.isPublic,
+        this.state.contestName,
+        this.state.startTime,
+        this.state.endTime
+      )
         .then(result => {
           history.push("/my-contests");
         })
@@ -147,6 +197,21 @@ class CreateOrUpdateContest extends Component {
             Contest name must be between 1 and 50 characters.
           </HelpBlock>
         </FormGroup>
+        <p>Start date:</p>
+        <Datetime
+          value={this.state.startTime}
+          onChange={this.handleStartTimeChange}
+          dateFormat="LLL"
+          input={false}
+        />
+        <br />
+        <p>End date:</p>
+        <Datetime
+          value={this.state.endTime}
+          onChange={this.handleEndTimeChange}
+          dateFormat="LLL"
+          input={false}
+        />
         <Button type="submit">Submit</Button>
       </form>
     );

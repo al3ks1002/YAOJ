@@ -55,28 +55,38 @@ export function getContests(isPublic) {
   return axios.get(apiGetUrl);
 }
 
-export function addContest(isPublic, contestName) {
+export function addContest(isPublic, contestName, startTime, endTime) {
   setupAuthorizationHeader();
   try {
     const userId = LocalStorageUtils.getUserId();
     return axios.post(ApiUrl + "new-contest", {
       ownerId: userId,
       name: contestName,
-      isPublic: isPublic
+      isPublic: isPublic,
+      startTime: startTime,
+      endTime: endTime
     });
   } catch (error) {
     throw error;
   }
 }
 
-export function updateContest(contestId, isPublic, contestName) {
+export function updateContest(
+  contestId,
+  isPublic,
+  contestName,
+  startTime,
+  endTime
+) {
   setupAuthorizationHeader();
   try {
     const userId = LocalStorageUtils.getUserId();
     return axios.post(ApiUrl + "update-contest/" + contestId, {
       ownerId: userId,
       name: contestName,
-      isPublic: isPublic
+      isPublic: isPublic,
+      startTime: startTime,
+      endTime: endTime
     });
   } catch (error) {
     throw error;
@@ -163,4 +173,12 @@ export function executeSource(fId) {
 export function getSubmissions(problemId) {
   setupAuthorizationHeader();
   return axios.get(ApiUrl + "submissions/" + problemId);
+}
+
+export function submitContestantSource(problemId, formData) {
+  setupAuthorizationHeader();
+  const config = {
+    headers: { "content-type": "multipart/form-data" }
+  };
+  return axios.post(ApiUrl + "contestant-submit/" + problemId, formData, config);
 }

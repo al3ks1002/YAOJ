@@ -105,6 +105,13 @@ func (judge *Judge) Equal(output []byte, ok []byte) bool {
 	return bytes.Equal(outputNoSpaces, okNoSpaces)
 }
 
+func max(a, b int64) int64 {
+	if a < b {
+		return b
+	}
+	return a
+}
+
 func (judge *Judge) Run(binaryPath string, timelimit int64, inTestContent string, okTestContent string) (string, error) {
 	// Prepare running command
 	cmd := exec.Command(binaryPath)
@@ -130,8 +137,7 @@ func (judge *Judge) Run(binaryPath string, timelimit int64, inTestContent string
 		}
 	}()
 
-	var cpuTime int64 = 0
-	var runningTime int64 = 0
+	var processTime int64 = 0
 	for {
 		currentCpuTime, currentRunningTime, err, isDone := judge.GetTime(cmd.Process.Pid)
 		if err != nil {
@@ -140,20 +146,11 @@ func (judge *Judge) Run(binaryPath string, timelimit int64, inTestContent string
 		if isDone {
 			break
 		}
-		if currentCpuTime > cpuTime {
-			cpuTime = currentCpuTime
+		currentTime := max(currentRunningTime, currentCpuTime)
+		if currentTime > timelimit {
+			return "Time limit exceeded", nil
 		}
-		if currentRunningTime > runningTime {
-			runningTime = currentRunningTime
-		}
-	}
-
-	var processTime int64 = cpuTime
-	if runningTime > processTime {
-		processTime = runningTime
-	}
-	if processTime > timelimit {
-		return "Time limit exceeded", nil
+		processTime = max(processTime, currentTime)
 	}
 	log.Println(processTime)
 

@@ -43,7 +43,9 @@ var schema = `
 		id SERIAL NOT NULL PRIMARY KEY,
 		owner_id TEXT NOT NULL,
 		name TEXT NOT NULL,
-		is_public BOOLEAN NOT NULL
+		is_public BOOLEAN NOT NULL,
+		start_time TIMESTAMPTZ NOT NULL,
+		end_time TIMESTAMPTZ NOT NULL
 	);
 
 	CREATE TABLE IF NOT EXISTS problems (
@@ -124,7 +126,7 @@ func (db *PostgreSQL) GetUserContests(userId string) ([]model.Contest, error) {
 }
 
 func (db *PostgreSQL) AddNewContest(contest *model.Contest) error {
-	if _, err := db.dbConn.NamedExec("INSERT INTO contests (owner_id, name, is_public) VALUES (:owner_id, :name, :is_public)", contest); err != nil {
+	if _, err := db.dbConn.NamedExec("INSERT INTO contests (owner_id, name, is_public, start_time, end_time) VALUES (:owner_id, :name, :is_public, :start_time, :end_time)", contest); err != nil {
 		return err
 	}
 	return nil
@@ -176,7 +178,7 @@ func (db *PostgreSQL) DeleteProblemWithId(problemId string) error {
 }
 
 func (db *PostgreSQL) UpdateContest(contest *model.Contest) error {
-	if _, err := db.dbConn.NamedExec("UPDATE contests SET owner_id = :owner_id, name = :name, is_public = :is_public WHERE id = :id", contest); err != nil {
+	if _, err := db.dbConn.NamedExec("UPDATE contests SET owner_id = :owner_id, name = :name, is_public = :is_public, start_time = :start_time, end_time = :end_time WHERE id = :id", contest); err != nil {
 		return err
 	}
 	return nil

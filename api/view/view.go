@@ -12,6 +12,7 @@ import (
 	"github.com/gorilla/context"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	"github.com/rs/xid"
 	jose "gopkg.in/square/go-jose.v2"
 
 	"../controller"
@@ -58,6 +59,7 @@ func (view View) Start() {
 	s.Handle("/delete-file/{f-id}", authMiddleware(DeleteFileHandler(&view))).Methods("DELETE")
 
 	s.Handle("/execute/{f-id}", authMiddleware(ExecuteHandler(&view))).Methods("POST")
+	s.Handle("/contestant-submit/{problem-id}", authMiddleware(ContestantSubmitHandler(&view))).Methods("POST")
 
 	headersOk := handlers.AllowedHeaders([]string{"X-Requested-With", "Authorization", "X-Auth-Key", "X-Auth-Secret", "Content-Type"})
 	originsOk := handlers.AllowedOrigins([]string{"*"})
@@ -816,6 +818,91 @@ func SubmissionsHandler(view *View) http.Handler {
 				} else {
 					payload, _ := json.Marshal(submissions)
 					w.Write([]byte(payload))
+				}
+			}
+		}
+	})
+}
+
+func ContestantSubmitHandler(view *View) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if err := r.ParseMultipartForm((1 << 20) * 100); err != nil {
+			log.Println(err)
+			http.Error(w, err.Error(), 500)
+		}
+
+		// Go through all the uploaded files
+		for k, v := range r.Form {
+			fileName := k
+			fileContent := string(v[0])
+
+			// Get a Seaweed file ID
+			fId, err := view.Controller.GetSeaweedId()
+			if err != nil {
+				log.Println(err)
+				http.Error(w, err.Error(), 500)
+				return
+			}
+
+			// Do a POST request to Seaweed to save the file in the filesyste2
+			seaweedResponse, err := view.Controller.SeaweedPost(fileName, fileContent, fId)
+			if err != nil {
+				log.Println(err)
+				http.Error(w, err.Error(), 500)
+				return
+			}
+
+			// Check the Seaweed response code
+			if seaweedResponse.StatusCode < 200 || seaweedResponse.StatusCode > 299 {
+				err := "Seaweed POST error"
+				log.Println(err)
+				http.Error(w, err, seaweedResponse.StatusCode)
+				return
+			}
+
+			// Add the file in the storage
+			err = view.Controller.AddFileInStorage(xid.New().String(), fId, fileName)
+			if err != nil {
+				log.Println(err)
+				http.Error(w, err.Error(), 500)
+				return
+			}
+
+			// Get the problem ID from the URI
+			vars := mux.Vars(r)
+			problemId := vars["problem-id"]
+
+			// Get the problem from the storage
+			if problem, err := view.Controller.GetProblemWithId(problemId); err != nil {
+				log.Println(err)
+				http.Error(w, err.Error(), 500)
+			} else {
+				// Get the sender ID from the request
+				senderId := context.Get(r, "senderId").(string)
+
+				// Get the contest ID from the problem
+				contestId := problem.ContestId
+
+				// Verify if the sender is the owner of the problem
+				if !view.Controller.IsPublic(contestId) && !view.Controller.IsMyContest(senderId, contestId) {
+					err := "Not an owner of the problem"
+					log.Println(err)
+					http.Error(w, err, 403)
+					return
+				}
+
+				// Add the submission in the storage
+				submissionId, err := view.Controller.AddSubmissionToStorage(senderId, problemId, fId)
+				if err != nil {
+					log.Println(err)
+					http.Error(w, err.Error(), 500)
+					return
+				}
+
+				// Run the submission
+				if err := view.Controller.RunSubmission(submissionId, fId, problemId); err != nil {
+					log.Println(err)
+					http.Error(w, err.Error(), 500)
 				}
 			}
 		}

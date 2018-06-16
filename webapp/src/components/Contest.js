@@ -100,6 +100,12 @@ class Contest extends Component {
               {!this.state.contest.IsPublic && "Not "}
               Public
             </Panel.Body>
+            <Panel.Body>
+              Start time: {new Date(this.state.contest.StartTime).toString()}
+            </Panel.Body>
+            <Panel.Body>
+              End time: {new Date(this.state.contest.EndTime).toString()}
+            </Panel.Body>
           </Panel>
           <br />
           <ProblemList contestId={this.state.id} />

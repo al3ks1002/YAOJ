@@ -22,6 +22,7 @@ class Problem extends Component {
     this.handleUploadSources = this.handleUploadSources.bind(this);
     this.handleSeeSubmissions = this.handleSeeSubmissions.bind(this);
     this.sendFilesRequest = this.sendFilesRequest.bind(this);
+    this.handleContestantSubmit = this.handleContestantSubmit.bind(this);
 
     this.state = {
       id: null,
@@ -30,6 +31,7 @@ class Problem extends Component {
       loaded: false,
       tests: [],
       sources: [],
+      contestantSource: null,
       error: null,
       refresh: false
     };
@@ -84,6 +86,15 @@ class Problem extends Component {
     });
   }
 
+  onContestantSourceDrop(files) {
+    const sourceRegex = new RegExp("^\\w+\\.(cpp)$", "g");
+    if (files[0].name.match(sourceRegex)) {
+      this.setState({
+        contestantSource: files[0]
+      });
+    }
+  }
+
   sendFilesRequest(formData, fileType) {
     AxiosUtils.uploadFiles(this.state.id, formData)
       .then(result => {
@@ -134,6 +145,34 @@ class Problem extends Component {
 
   handleUploadSources() {
     this.handleUploadFiles(this.state.sources, this.sendFilesRequest, "source");
+  }
+
+  handleContestantSubmit() {
+    if (this.state.contestantSource === null) {
+      return;
+    }
+    const formData = new FormData();
+    const reader = new FileReader();
+    reader.onload = () => {
+      const fileContent = reader.result;
+      formData.append(this.state.contestantSource.name, fileContent);
+      this.handleSeeSubmissions();
+      AxiosUtils.submitContestantSource(this.state.id, formData)
+        .then(result => {
+          this.setState({
+            contestantSource: null
+          });
+        })
+        .catch(error => {
+          this.setState({ error: error });
+        });
+    };
+    reader.onabort = () =>
+      this.setState({ error: new Error("File reading was aborted") });
+    reader.onerror = () =>
+      this.setState({ error: new Error("File reading has failed") });
+
+    reader.readAsText(this.state.contestantSource);
   }
 
   componentDidMount() {
@@ -219,7 +258,7 @@ class Problem extends Component {
             <br />
             <Button onClick={this.handleSeeSubmissions}>Submissions</Button>
           </div>
-          {this.isMyContest(this.state.contest) && (
+          {this.isMyContest(this.state.contest) ? (
             <div>
               <div style={Styles.flex}>
                 <Dropzone onDrop={this.onTestsDrop.bind(this)}>
@@ -274,6 +313,33 @@ class Problem extends Component {
                   problemId={this.state.id}
                 />
               </div>
+            </div>
+          ) : (
+            <div style={Styles.flex}>
+              <Dropzone
+                multiple={false}
+                onDrop={this.onContestantSourceDrop.bind(this)}
+              >
+                <p>Upload source code.</p>
+                <br />
+                <p>Only .cpp files are accepted.</p>
+              </Dropzone>
+              <aside>
+                <h2>Dropped source</h2>
+                <ul>
+                  {this.state.contestantSource && (
+                    <li>
+                      {this.state.contestantSource.name} -{" "}
+                      {this.state.contestantSource.size} bytes
+                    </li>
+                  )}
+                </ul>
+                <div>
+                  <Button onClick={this.handleContestantSubmit}>
+                    Submit source
+                  </Button>
+                </div>
+              </aside>
             </div>
           )}
         </div>

@@ -83,10 +83,9 @@ class SourceList extends Component {
   }
 
   executeSourceCallback(fId) {
+    history.push("/submissions/" + this.state.problemId);
     AxiosUtils.executeSource(fId)
-      .then(result => {
-        history.push("/submissions/" + this.state.problemId);
-      })
+      .then(result => {})
       .catch(error => {
         this.setState({
           error: error

@@ -8,11 +8,13 @@ type User struct {
 }
 
 type Contest struct {
-	Id       string
-	OwnerId  string `db:"owner_id"`
-	Name     string
-	IsPublic bool `db:"is_public"`
-	UserName string
+	Id        string
+	OwnerId   string `db:"owner_id"`
+	Name      string
+	IsPublic  bool `db:"is_public"`
+	UserName  string
+	StartTime time.Time `db:"start_time"`
+	EndTime   time.Time `db:"end_time"`
 }
 
 type Problem struct {
