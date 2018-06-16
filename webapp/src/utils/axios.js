@@ -182,3 +182,13 @@ export function submitContestantSource(problemId, formData) {
   };
   return axios.post(ApiUrl + "contestant-submit/" + problemId, formData, config);
 }
+
+export function getSubmission(submissionId) {
+  setupAuthorizationHeader();
+  return axios.get(ApiUrl + "submission/" + submissionId);
+}
+
+export function getResults(submissionId) {
+  setupAuthorizationHeader();
+  return axios.get(ApiUrl + "results/" + submissionId);
+}

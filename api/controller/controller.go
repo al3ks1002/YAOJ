@@ -237,6 +237,7 @@ func (ctrl *Controller) RunSubmission(submissionId string, fId string, problemId
 	for testName := range inTestsMap {
 		inTestFId := inTestsMap[testName]
 		okTestFId, ok := okTestsMap[testName]
+		// If there is no ok for the in test, continue
 		if !ok {
 			continue
 		}
@@ -251,7 +252,7 @@ func (ctrl *Controller) RunSubmission(submissionId string, fId string, problemId
 			return err
 		}
 
-		// Running on test name
+		// Update submission status to 'Running on test'
 		err = ctrl.Repository.UpdateSubmissionStatus(submissionId, "Running on "+testName+".in")
 		if err != nil {
 			return err
@@ -261,7 +262,7 @@ func (ctrl *Controller) RunSubmission(submissionId string, fId string, problemId
 		// Run
 		status, err := ctrl.Judge.Run(binaryPath, timelimit, inTestContent, okTestContent)
 		if err != nil {
-			// Update submission status
+			// Update submission status and return if an error occured
 			err = ctrl.Repository.UpdateSubmissionStatus(submissionId, status)
 			if err != nil {
 				return err
@@ -269,15 +270,15 @@ func (ctrl *Controller) RunSubmission(submissionId string, fId string, problemId
 			return nil
 		}
 
-		if status != "Accepted" {
-			log.Println(status)
-			err = ctrl.Repository.UpdateSubmissionStatus(submissionId, status+" on "+testName+".in")
-			return nil
+		log.Println(testName + ": " + status)
+		err = ctrl.Repository.AddNewResult(submissionId, testName, status)
+		if err != nil {
+			return err
 		}
 	}
 
 	// Update submission status
-	err = ctrl.Repository.UpdateSubmissionStatus(submissionId, "Accepted")
+	err = ctrl.Repository.UpdateSubmissionStatus(submissionId, "Done")
 	if err != nil {
 		return err
 	}
@@ -287,4 +288,12 @@ func (ctrl *Controller) RunSubmission(submissionId string, fId string, problemId
 
 func (ctrl *Controller) GetSubmissionsForProblem(problemId string) ([]model.Submission, error) {
 	return ctrl.Repository.GetSubmissionsForProblem(problemId)
+}
+
+func (ctrl *Controller) GetSubmissionWithId(submissionId string) (*model.Submission, error) {
+	return ctrl.Repository.GetSubmissionWithId(submissionId)
+}
+
+func (ctrl *Controller) GetResultsForSubmission(submissionId string) ([]model.Result, error) {
+	return ctrl.Repository.GetResultsForSubmission(submissionId)
 }

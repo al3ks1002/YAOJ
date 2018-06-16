@@ -40,3 +40,10 @@ type Submission struct {
 	Timestamp time.Time
 	UserName  string
 }
+
+type Result struct {
+	Id           string
+	SubmissionId string `db:"submission_id"`
+	TestName     string `db:"test_name"`
+	Verdict      string
+}

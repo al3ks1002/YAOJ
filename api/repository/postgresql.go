@@ -71,6 +71,13 @@ var schema = `
 		status TEXT NOT NULL,
 		timestamp TIMESTAMPTZ NOT NULL
 	);
+
+	CREATE TABLE IF NOT EXISTS results (
+		id SERIAL NOT NULL PRIMARY KEY,
+		submission_id TEXT NOT NULL,
+		test_name TEXT NOT NULL,
+		verdict TEXT NOT NULL
+	);
 `
 
 func (db *PostgreSQL) createTablesIfNonExistant() error {
@@ -275,4 +282,27 @@ func (db *PostgreSQL) GetTimelimit(problemId string) (int64, error) {
 		return 0, err
 	}
 	return timelimit, nil
+}
+
+func (db *PostgreSQL) AddNewResult(submissionId string, testName string, verdict string) error {
+	if _, err := db.dbConn.Exec("INSERT INTO results (submission_id, test_name, verdict) VALUES ($1, $2, $3)", submissionId, testName, verdict); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (db *PostgreSQL) GetSubmissionWithId(submissionId string) (*model.Submission, error) {
+	submission := &model.Submission{}
+	if err := db.dbConn.Get(submission, "SELECT * FROM submissions WHERE id = $1", submissionId); err != nil {
+		return nil, err
+	}
+	return submission, nil
+}
+
+func (db *PostgreSQL) GetResultsForSubmission(submissionId string) ([]model.Result, error) {
+	results := []model.Result{}
+	if err := db.dbConn.Select(&results, "SELECT * FROM results WHERE submission_id = $1", submissionId); err != nil {
+		return nil, err
+	}
+	return results, nil
 }

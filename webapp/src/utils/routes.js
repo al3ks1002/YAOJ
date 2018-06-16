@@ -7,6 +7,7 @@ import Callback from "../components/Callback.js";
 import Profile from "../components/Profile.js";
 import ContestList from "../components/ContestList.js";
 import SubmissionList from "../components/SubmissionList.js";
+import ResultList from "../components/ResultList.js";
 import ErrorBoundary from "../components/ErrorBoundary.js";
 import CreateOrUpdateContest from "../components/CreateOrUpdateContest.js";
 import NewProblem from "../components/NewProblem.js";
@@ -147,6 +148,18 @@ export const makeMainRoutes = () => {
             ) : (
               <ErrorBoundary>
                 <SubmissionList {...props} />
+              </ErrorBoundary>
+            )
+          }
+        />
+        <Route
+          path="/results/:submissionId"
+          render={props =>
+            !auth.isAuthenticated() ? (
+              <Redirect to="/home" />
+            ) : (
+              <ErrorBoundary>
+                <ResultList {...props} />
               </ErrorBoundary>
             )
           }

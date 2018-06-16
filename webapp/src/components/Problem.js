@@ -220,12 +220,50 @@ class Problem extends Component {
     }
   }
 
+  canSubmit() {
+    var startDate = new Date(this.state.contest.StartTime);
+    var endDate = new Date(this.state.contest.EndTime);
+    var now = new Date();
+    return now >= startDate && now <= endDate;
+  }
+
   render() {
     if (this.state.error) {
       throw this.state.error;
     }
 
     if (this.state.loaded) {
+      var submitButton = <div />;
+      if (this.canSubmit()) {
+        submitButton = (
+          <div style={Styles.flex}>
+            <Dropzone
+              multiple={false}
+              onDrop={this.onContestantSourceDrop.bind(this)}
+            >
+              <p>Upload source code.</p>
+              <br />
+              <p>Only .cpp files are accepted.</p>
+            </Dropzone>
+            <aside>
+              <h2>Dropped source</h2>
+              <ul>
+                {this.state.contestantSource && (
+                  <li>
+                    {this.state.contestantSource.name} -{" "}
+                    {this.state.contestantSource.size} bytes
+                  </li>
+                )}
+              </ul>
+              <div>
+                <Button onClick={this.handleContestantSubmit}>
+                  Submit source
+                </Button>
+              </div>
+            </aside>
+          </div>
+        );
+      }
       return (
         <div style={Styles.flex}>
           <div style={Styles.default}>
@@ -315,32 +353,7 @@ class Problem extends Component {
               </div>
             </div>
           ) : (
-            <div style={Styles.flex}>
-              <Dropzone
-                multiple={false}
-                onDrop={this.onContestantSourceDrop.bind(this)}
-              >
-                <p>Upload source code.</p>
-                <br />
-                <p>Only .cpp files are accepted.</p>
-              </Dropzone>
-              <aside>
-                <h2>Dropped source</h2>
-                <ul>
-                  {this.state.contestantSource && (
-                    <li>
-                      {this.state.contestantSource.name} -{" "}
-                      {this.state.contestantSource.size} bytes
-                    </li>
-                  )}
-                </ul>
-                <div>
-                  <Button onClick={this.handleContestantSubmit}>
-                    Submit source
-                  </Button>
-                </div>
-              </aside>
-            </div>
+            <div>{submitButton}</div>
           )}
         </div>
       );

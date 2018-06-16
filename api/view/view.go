@@ -40,6 +40,8 @@ func (view View) Start() {
 	s.Handle("/problems/{contest-id}", authMiddleware(ProblemsHandler(&view))).Methods("GET")
 	s.Handle("/problem/{problem-id}", authMiddleware(ProblemHandler(&view))).Methods("GET")
 	s.Handle("/submissions/{problem-id}", authMiddleware(SubmissionsHandler(&view))).Methods("GET")
+	s.Handle("/submission/{submission-id}", authMiddleware(SubmissionHandler(&view))).Methods("GET")
+	s.Handle("/results/{submission-id}", authMiddleware(ResultsHandler(&view))).Methods("GET")
 
 	s.Handle("/new-contest", authMiddleware(NewContestHandler(&view))).Methods("POST")
 	s.Handle("/new-problem/{contest-id}", authMiddleware(NewProblemHandler(&view))).Methods("POST")
@@ -905,6 +907,47 @@ func ContestantSubmitHandler(view *View) http.Handler {
 					http.Error(w, err.Error(), 500)
 				}
 			}
+		}
+	})
+}
+
+// Returns a Submission JSON given a submission ID
+func SubmissionHandler(view *View) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+
+		// Get the problem ID from the URI
+		vars := mux.Vars(r)
+		submissionId := vars["submission-id"]
+
+		// Get the submission from the storage
+		if submission, err := view.Controller.GetSubmissionWithId(submissionId); err != nil {
+			log.Println(err)
+			http.Error(w, err.Error(), 500)
+		} else {
+			// Respond with the submission
+			payload, _ := json.Marshal(submission)
+			w.Write([]byte(payload))
+		}
+	})
+}
+
+// Gets a list of Results for a given submission
+func ResultsHandler(view *View) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+
+		// Get the problem ID from the URI
+		vars := mux.Vars(r)
+		submissionId := vars["submission-id"]
+
+		// Get the results from the storage
+		if results, err := view.Controller.GetResultsForSubmission(submissionId); err != nil {
+			log.Println(err)
+			http.Error(w, err.Error(), 500)
+		} else {
+			payload, _ := json.Marshal(results)
+			w.Write([]byte(payload))
 		}
 	})
 }

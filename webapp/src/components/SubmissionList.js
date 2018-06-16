@@ -92,13 +92,13 @@ class SubmissionList extends Component {
               <th>Code</th>
               <th>Status</th>
               <th>Time</th>
+              <th>Result</th>
             </tr>
           </thead>
           <tbody>
             {this.state.submissions
               .sort((a, b) => new Date(a.Timestamp) - new Date(b.Timestamp))
               .map((submission, i) => {
-                console.log(submission.Timestamp);
                 return (
                   <SubmissionRow
                     key={i}
