@@ -39,6 +39,7 @@ type Submission struct {
 	Status    string
 	Timestamp time.Time
 	UserName  string
+	Score     float64
 }
 
 type Result struct {
@@ -46,4 +47,5 @@ type Result struct {
 	SubmissionId string `db:"submission_id"`
 	TestName     string `db:"test_name"`
 	Verdict      string
+	Time         int64
 }

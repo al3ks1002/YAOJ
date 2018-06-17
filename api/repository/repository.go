@@ -27,7 +27,8 @@ type Repository interface {
 	GetSubmissionsForProblem(string) ([]model.Submission, error)
 	UpdateSubmissionStatus(string, string) error
 	GetTimelimit(string) (int64, error)
-	AddNewResult(string, string, string) error
+	AddNewResult(string, string, string, int64) error
 	GetSubmissionWithId(string) (*model.Submission, error)
 	GetResultsForSubmission(string) ([]model.Result, error)
+	UpdateSubmissionScore(string, float64) error
 }

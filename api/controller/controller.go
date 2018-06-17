@@ -234,6 +234,8 @@ func (ctrl *Controller) RunSubmission(submissionId string, fId string, problemId
 	}
 
 	// Run the source code on every test
+	numOkTests := 0
+	numTotalTests := 0
 	for testName := range inTestsMap {
 		inTestFId := inTestsMap[testName]
 		okTestFId, ok := okTestsMap[testName]
@@ -260,7 +262,7 @@ func (ctrl *Controller) RunSubmission(submissionId string, fId string, problemId
 
 		log.Println("Running on " + testName + ".in")
 		// Run
-		status, err := ctrl.Judge.Run(binaryPath, timelimit, inTestContent, okTestContent)
+		status, processTime, err := ctrl.Judge.Run(binaryPath, timelimit, inTestContent, okTestContent)
 		if err != nil {
 			// Update submission status and return if an error occured
 			err = ctrl.Repository.UpdateSubmissionStatus(submissionId, status)
@@ -271,7 +273,11 @@ func (ctrl *Controller) RunSubmission(submissionId string, fId string, problemId
 		}
 
 		log.Println(testName + ": " + status)
-		err = ctrl.Repository.AddNewResult(submissionId, testName, status)
+		if status == "Accepted" {
+			numOkTests++
+		}
+		numTotalTests++
+		err = ctrl.Repository.AddNewResult(submissionId, testName, status, processTime)
 		if err != nil {
 			return err
 		}
@@ -279,6 +285,12 @@ func (ctrl *Controller) RunSubmission(submissionId string, fId string, problemId
 
 	// Update submission status
 	err = ctrl.Repository.UpdateSubmissionStatus(submissionId, "Done")
+	if err != nil {
+		return err
+	}
+
+	// Update score
+	err = ctrl.Repository.UpdateSubmissionScore(submissionId, float64(numOkTests)/float64(numTotalTests)*100)
 	if err != nil {
 		return err
 	}

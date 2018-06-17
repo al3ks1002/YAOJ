@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import ResultRow from "./ResultRow.js";
 
 import { Table } from "react-bootstrap";
+import * as LocalStorageUtils from "../utils/localStorage.js";
 
 import loading from "../assets/loading.svg";
 import Styles from "../utils/styles.js";
@@ -20,6 +21,15 @@ class ResultList extends Component {
       loaded: false,
       error: null
     };
+  }
+
+  isMyContest(contest) {
+    try {
+      const userId = LocalStorageUtils.getUserId();
+      return userId === contest.OwnerId;
+    } catch (error) {
+      return false;
+    }
   }
 
   componentDidMount() {
@@ -103,6 +113,7 @@ class ResultList extends Component {
             <tr>
               <th>Test name</th>
               <th>Verdict</th>
+              <th>Time</th>
             </tr>
           </thead>
           <tbody>
@@ -115,6 +126,7 @@ class ResultList extends Component {
                     id={result.Id}
                     testName={result.TestName}
                     verdict={result.Verdict}
+                    time={result.Time}
                     userId={this.state.submission.UserId}
                     contestOwnerId={this.state.contest.OwnerId}
                   />

@@ -33,11 +33,15 @@ class SubmissionRow extends Component {
         ) : (
           <td>-</td>
         )}
-        <td> {this.props.status} </td>
+        {this.props.status === "Done" ? (
+          <td> {this.props.score} </td>
+        ) : (
+          <td> {this.props.status} </td>
+        )}
         <td> {new Date(this.props.timestamp).toString()} </td>
         {this.isMySubmission() || this.isMyContest() ? (
           <td>
-            <a href={"/results/"+this.props.id}>Result</a>
+            <a href={"/results/" + this.props.id}>Result</a>
           </td>
         ) : (
           <td>-</td>

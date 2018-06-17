@@ -69,14 +69,16 @@ var schema = `
 		problem_id TEXT NOT NULL,
 		f_id TEXT NOT NULL,
 		status TEXT NOT NULL,
-		timestamp TIMESTAMPTZ NOT NULL
+		timestamp TIMESTAMPTZ NOT NULL,
+		score FLOAT DEFAULT 0
 	);
 
 	CREATE TABLE IF NOT EXISTS results (
 		id SERIAL NOT NULL PRIMARY KEY,
 		submission_id TEXT NOT NULL,
 		test_name TEXT NOT NULL,
-		verdict TEXT NOT NULL
+		verdict TEXT NOT NULL,
+		time INTEGER DEFAULT 0
 	);
 `
 
@@ -284,8 +286,8 @@ func (db *PostgreSQL) GetTimelimit(problemId string) (int64, error) {
 	return timelimit, nil
 }
 
-func (db *PostgreSQL) AddNewResult(submissionId string, testName string, verdict string) error {
-	if _, err := db.dbConn.Exec("INSERT INTO results (submission_id, test_name, verdict) VALUES ($1, $2, $3)", submissionId, testName, verdict); err != nil {
+func (db *PostgreSQL) AddNewResult(submissionId string, testName string, verdict string, time int64) error {
+	if _, err := db.dbConn.Exec("INSERT INTO results (submission_id, test_name, verdict, time) VALUES ($1, $2, $3, $4)", submissionId, testName, verdict, time); err != nil {
 		return err
 	}
 	return nil
@@ -305,4 +307,11 @@ func (db *PostgreSQL) GetResultsForSubmission(submissionId string) ([]model.Resu
 		return nil, err
 	}
 	return results, nil
+}
+
+func (db *PostgreSQL) UpdateSubmissionScore(submissionId string, score float64) error {
+	if _, err := db.dbConn.Exec("UPDATE submissions SET score = $1 WHERE id = $2", score, submissionId); err != nil {
+		return err
+	}
+	return nil
 }

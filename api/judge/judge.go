@@ -112,7 +112,8 @@ func max(a, b int64) int64 {
 	return a
 }
 
-func (judge *Judge) Run(binaryPath string, timelimit int64, inTestContent string, okTestContent string) (string, error) {
+// Returns status, time end error
+func (judge *Judge) Run(binaryPath string, timelimit int64, inTestContent string, okTestContent string) (string, int64, error) {
 	// Prepare running command
 	cmd := exec.Command(binaryPath)
 	cmd.Stdin = strings.NewReader(inTestContent)
@@ -122,7 +123,7 @@ func (judge *Judge) Run(binaryPath string, timelimit int64, inTestContent string
 	// Run
 	err := cmd.Start()
 	if err != nil {
-		return "Server error", err
+		return "Server error", 0, err
 	}
 	defer cmd.Process.Kill()
 
@@ -141,14 +142,14 @@ func (judge *Judge) Run(binaryPath string, timelimit int64, inTestContent string
 	for {
 		currentCpuTime, currentRunningTime, err, isDone := judge.GetTime(cmd.Process.Pid)
 		if err != nil {
-			return "Server error", err
+			return "Server error", 0, err
 		}
 		if isDone {
 			break
 		}
 		currentTime := max(currentRunningTime, currentCpuTime)
 		if currentTime > timelimit {
-			return "Time limit exceeded", nil
+			return "Time limit exceeded", timelimit, nil
 		}
 		processTime = max(processTime, currentTime)
 	}
@@ -156,12 +157,12 @@ func (judge *Judge) Run(binaryPath string, timelimit int64, inTestContent string
 
 	waitGroup.Wait()
 	if runtimeError != nil {
-		return "Runtime error", nil
+		return "Runtime error", 0, nil
 	}
 
 	if !judge.Equal(outputBuffer.Bytes(), []byte(okTestContent)) {
-		return "Wrong answer", nil
+		return "Wrong answer", processTime, nil
 	}
 
-	return "Accepted", nil
+	return "Accepted", processTime, nil
 }

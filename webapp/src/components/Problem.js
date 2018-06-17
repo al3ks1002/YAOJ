@@ -65,7 +65,7 @@ class Problem extends Component {
   }
 
   onTestsDrop(files) {
-    const testRegex = new RegExp("^\\w+\\.(in|ok)$", "g");
+    const testRegex = new RegExp("^.+\\.(in|ok)$", "g");
     const filtered = files.filter(file => {
       return file.name.match(testRegex);
     });
@@ -76,7 +76,7 @@ class Problem extends Component {
   }
 
   onSourcesDrop(files) {
-    const sourceRegex = new RegExp("^\\w+\\.(cpp)$", "g");
+    const sourceRegex = new RegExp("^.+\\.(cpp)$", "g");
     const filtered = files.filter(file => {
       return file.name.match(sourceRegex);
     });
@@ -87,7 +87,7 @@ class Problem extends Component {
   }
 
   onContestantSourceDrop(files) {
-    const sourceRegex = new RegExp("^\\w+\\.(cpp)$", "g");
+    const sourceRegex = new RegExp("^.+\\.(cpp)$", "g");
     if (files[0].name.match(sourceRegex)) {
       this.setState({
         contestantSource: files[0]

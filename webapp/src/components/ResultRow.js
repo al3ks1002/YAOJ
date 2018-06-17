@@ -27,11 +27,13 @@ class ResultRow extends Component {
         <tr>
           <td>{this.props.testName + ".in"}</td>
           <td>{this.props.verdict}</td>
+          <td>{this.props.time} ms</td>
         </tr>
       );
     } else {
       return (
         <tr>
+          <td>-</td>
           <td>-</td>
           <td>-</td>
         </tr>

@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import SubmissionRow from "./SubmissionRow.js";
 
 import { Table } from "react-bootstrap";
+import * as LocalStorageUtils from "../utils/localStorage.js";
 
 import loading from "../assets/loading.svg";
 import Styles from "../utils/styles.js";
@@ -19,6 +20,15 @@ class SubmissionList extends Component {
       loaded: false,
       error: null
     };
+  }
+
+  isMyContest(contest) {
+    try {
+      const userId = LocalStorageUtils.getUserId();
+      return userId === contest.OwnerId;
+    } catch (error) {
+      return false;
+    }
   }
 
   componentDidMount() {
@@ -107,6 +117,7 @@ class SubmissionList extends Component {
                     userName={submission.UserName}
                     fId={submission.FId}
                     status={submission.Status}
+                    score={submission.Score}
                     timestamp={submission.Timestamp}
                     contestOwnerId={this.state.contest.OwnerId}
                   />
