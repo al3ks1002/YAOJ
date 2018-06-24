@@ -108,32 +108,34 @@ class ResultList extends Component {
 
     if (this.state.loaded) {
       return (
-        <Table striped bordered condensed hover>
-          <thead>
-            <tr>
-              <th>Test name</th>
-              <th>Verdict</th>
-              <th>Time</th>
-            </tr>
-          </thead>
-          <tbody>
-            {this.state.results
-              .sort((a, b) => a.TestName > b.TestName)
-              .map((result, i) => {
-                return (
-                  <ResultRow
-                    key={i}
-                    id={result.Id}
-                    testName={result.TestName}
-                    verdict={result.Verdict}
-                    time={result.Time}
-                    userId={this.state.submission.UserId}
-                    contestOwnerId={this.state.contest.OwnerId}
-                  />
-                );
-              })}
-          </tbody>
-        </Table>
+        <div style={{ width: 700, marginLeft: 30 }}>
+          <Table striped bordered condensed hover>
+            <thead>
+              <tr>
+                <th>Test name</th>
+                <th>Verdict</th>
+                <th>Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              {this.state.results
+                .sort((a, b) => a.TestName > b.TestName)
+                .map((result, i) => {
+                  return (
+                    <ResultRow
+                      key={i}
+                      id={result.Id}
+                      testName={result.TestName}
+                      verdict={result.Verdict}
+                      time={result.Time}
+                      userId={this.state.submission.UserId}
+                      contestOwnerId={this.state.contest.OwnerId}
+                    />
+                  );
+                })}
+            </tbody>
+          </Table>
+        </div>
       );
     }
 

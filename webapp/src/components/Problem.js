@@ -304,21 +304,23 @@ class Problem extends Component {
                   <br />
                   <p>Only .in and .ok files are accepted.</p>
                 </Dropzone>
-                <aside>
-                  <h2>Dropped tests</h2>
-                  <ul>
-                    {this.state.tests.map((file, i) => (
-                      <li key={i}>
-                        {file.name} - {file.size} bytes
-                      </li>
-                    ))}
-                  </ul>
-                  <div>
-                    <Button onClick={this.handleUploadTests}>
-                      Upload tests
-                    </Button>
-                  </div>
-                </aside>
+                <div style={{ marginRight: 30, marginLeft: 30 }}>
+                  <aside>
+                    <h3>Dropped tests</h3>
+                    <ul>
+                      {this.state.tests.map((file, i) => (
+                        <li key={i}>
+                          {file.name} - {file.size} bytes
+                        </li>
+                      ))}
+                    </ul>
+                    <div>
+                      <Button onClick={this.handleUploadTests}>
+                        Upload tests
+                      </Button>
+                    </div>
+                  </aside>
+                </div>
                 <TestList
                   refresh={this.state.refresh}
                   problemId={this.state.id}
@@ -331,21 +333,23 @@ class Problem extends Component {
                   <br />
                   <p>Only .cpp files are accepted.</p>
                 </Dropzone>
-                <aside>
-                  <h2>Dropped sources</h2>
-                  <ul>
-                    {this.state.sources.map((file, i) => (
-                      <li key={i}>
-                        {file.name} - {file.size} bytes
-                      </li>
-                    ))}
-                  </ul>
-                  <div>
-                    <Button onClick={this.handleUploadSources}>
-                      Upload sources
-                    </Button>
-                  </div>
-                </aside>
+                <div style={{ marginRight: 30, marginLeft: 30 }}>
+                  <aside>
+                    <h3>Dropped sources</h3>
+                    <ul>
+                      {this.state.sources.map((file, i) => (
+                        <li key={i}>
+                          {file.name} - {file.size} bytes
+                        </li>
+                      ))}
+                    </ul>
+                    <div>
+                      <Button onClick={this.handleUploadSources}>
+                        Upload sources
+                      </Button>
+                    </div>
+                  </aside>
+                </div>
                 <SourceList
                   refresh={this.state.refresh}
                   problemId={this.state.id}

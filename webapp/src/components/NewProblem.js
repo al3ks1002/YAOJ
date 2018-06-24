@@ -112,55 +112,59 @@ class NewProblem extends Component {
     }
 
     return (
-      <form style={{ width: 500 }} onSubmit={this.handleSubmit.bind(this)}>
-        <FormGroup
-          controlId="formBasicText"
-          validationState={this.getNameValidationState()}
-        >
-          <FormControl
-            type="text"
-            value={this.state.problemName}
-            placeholder="Problem name"
-            onChange={this.handleProblemNameChange}
-          />
-          <FormControl.Feedback />
-          <HelpBlock>
-            Problem name must be between 1 and 50 characters.
-          </HelpBlock>
-        </FormGroup>
-        <FormGroup
-          controlId="formBasicText"
-          validationState={this.getDescriptionValidationState()}
-        >
-          <FormControl
-            type="text"
-            value={this.state.problemDescription}
-            placeholder="Problem description"
-            onChange={this.handleProblemDescriptionChange}
-          />
-          <FormControl.Feedback />
-          <HelpBlock>
-            Description name must be between 1 and 1000 characters.
-          </HelpBlock>
-        </FormGroup>
-        <FormGroup
-          controlId="formBasicText"
-          validationState={this.getTimelimitValidationState()}
-        >
-          <FormControl
-            type="number"
-            value={this.state.problemTimelimit}
-            placeholder="Problem timelimit"
-            onChange={this.handleProblemTimelimitChange}
-          />
-          <FormControl.Feedback />
-          <HelpBlock>
-            Timelimit must be between 100 and 10000 (in ms).
-          </HelpBlock>
-        </FormGroup>
+      <div style={{ marginLeft: 30 }}>
+        <form style={{ width: 700 }} onSubmit={this.handleSubmit.bind(this)}>
+          <FormGroup
+            controlId="formBasicText"
+            validationState={this.getNameValidationState()}
+          >
+            <FormControl
+              type="text"
+              value={this.state.problemName}
+              placeholder="Problem name"
+              onChange={this.handleProblemNameChange}
+            />
+            <FormControl.Feedback />
+            <HelpBlock>
+              Problem name must be between 1 and 50 characters.
+            </HelpBlock>
+          </FormGroup>
+          <FormGroup
+            controlId="formBasicText"
+            validationState={this.getDescriptionValidationState()}
+          >
+            <FormControl
+              componentClass="textarea"
+              style={{ height: 300 }}
+              type="text"
+              value={this.state.problemDescription}
+              placeholder="Problem description"
+              onChange={this.handleProblemDescriptionChange}
+            />
+            <FormControl.Feedback />
+            <HelpBlock>
+              Description name must be between 1 and 1000 characters.
+            </HelpBlock>
+          </FormGroup>
+          <FormGroup
+            controlId="formBasicText"
+            validationState={this.getTimelimitValidationState()}
+          >
+            <FormControl
+              type="number"
+              value={this.state.problemTimelimit}
+              placeholder="Problem timelimit"
+              onChange={this.handleProblemTimelimitChange}
+            />
+            <FormControl.Feedback />
+            <HelpBlock>
+              Timelimit must be between 100 and 10000 (in ms).
+            </HelpBlock>
+          </FormGroup>
 
-        <Button type="submit">Submit</Button>
-      </form>
+          <Button type="submit">Submit</Button>
+        </form>
+      </div>
     );
   }
 }

@@ -92,41 +92,49 @@ class Contest extends Component {
     if (this.state.loaded) {
       return (
         <div>
-          <Panel>
-            <Panel.Heading>
-              <h4>{this.state.contest.Name}</h4>
-            </Panel.Heading>
-            <Panel.Body>
-              {!this.state.contest.IsPublic && "Not "}
-              Public
-            </Panel.Body>
-            <Panel.Body>
-              Start time: {new Date(this.state.contest.StartTime).toString()}
-            </Panel.Body>
-            <Panel.Body>
-              End time: {new Date(this.state.contest.EndTime).toString()}
-            </Panel.Body>
-          </Panel>
-          <br />
-          <ProblemList contestId={this.state.id} />
-          {this.isMyContest(this.state.contest) && (
+          <div style={{ width: 700, marginLeft: 30 }}>
+            <Panel>
+              <Panel.Heading>
+                <h4>{this.state.contest.Name}</h4>
+              </Panel.Heading>
+              <Panel.Body>
+                {!this.state.contest.IsPublic && "Not "}
+                Public
+              </Panel.Body>
+              <Panel.Body>
+                Start time: {new Date(this.state.contest.StartTime).toString()}
+              </Panel.Body>
+              <Panel.Body>
+                End time: {new Date(this.state.contest.EndTime).toString()}
+              </Panel.Body>
+            </Panel>
+            <br />
+            <ProblemList contestId={this.state.id} />
+          </div>
+          <aside>
             <div>
-              <br />
-              <Button bsStyle="primary" onClick={this.handleAddProblem}>
-                Add problem
-              </Button>
+              {this.isMyContest(this.state.contest) && (
+                <div>
+                  <br />
+                  <Button bsStyle="primary" onClick={this.handleAddProblem}>
+                    Add problem
+                  </Button>
 
-              <br />
-              <br />
-              <Button onClick={this.handleUpdateContest}>Update contest</Button>
+                  <br />
+                  <br />
+                  <Button onClick={this.handleUpdateContest}>
+                    Update contest
+                  </Button>
 
-              <br />
-              <br />
-              <Button bsStyle="danger" onClick={this.handleDeleteContest}>
-                Delete contest
-              </Button>
+                  <br />
+                  <br />
+                  <Button bsStyle="danger" onClick={this.handleDeleteContest}>
+                    Delete contest
+                  </Button>
+                </div>
+              )}
             </div>
-          )}
+          </aside>
         </div>
       );
     }

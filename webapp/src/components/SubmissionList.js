@@ -94,39 +94,41 @@ class SubmissionList extends Component {
 
     if (this.state.loaded) {
       return (
-        <Table striped bordered condensed hover>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>User</th>
-              <th>Code</th>
-              <th>Status</th>
-              <th>Time</th>
-              <th>Result</th>
-            </tr>
-          </thead>
-          <tbody>
-            {this.state.submissions
-              .sort((a, b) => new Date(a.Timestamp) - new Date(b.Timestamp))
-              .map((submission, i) => {
-                return (
-                  <SubmissionRow
-                    key={i}
-                    id={submission.Id}
-                    userId={submission.UserId}
-                    userName={submission.UserName}
-                    fId={submission.FId}
-                    status={submission.Status}
-                    score={submission.Score}
-                    timestamp={submission.Timestamp}
-                    contestOwnerId={this.state.contest.OwnerId}
-                  />
-                );
-              })}
-          </tbody>
-        </Table>
+        <div style={{ width: 700, marginLeft: 30 }}>
+          <Table striped bordered condensed hover>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>User</th>
+                <th>Code</th>
+                <th>Status</th>
+                <th>Time</th>
+                <th>Result</th>
+              </tr>
+            </thead>
+            <tbody>
+              {this.state.submissions
+                .sort((a, b) => new Date(a.Timestamp) - new Date(b.Timestamp))
+                .map((submission, i) => {
+                  return (
+                    <SubmissionRow
+                      key={i}
+                      id={submission.Id}
+                      userId={submission.UserId}
+                      userName={submission.UserName}
+                      fId={submission.FId}
+                      status={submission.Status}
+                      score={submission.Score}
+                      timestamp={submission.Timestamp}
+                      contestOwnerId={this.state.contest.OwnerId}
+                    />
+                  );
+                })}
+            </tbody>
+          </Table>
+        </div>
       );
-    }
+   }
 
     return (
       <div className="container">
