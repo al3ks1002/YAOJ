@@ -59,7 +59,7 @@ export function addContest(isPublic, contestName, startTime, endTime) {
   setupAuthorizationHeader();
   try {
     const userId = LocalStorageUtils.getUserId();
-    return axios.post(ApiUrl + "new-contest", {
+    return axios.post(ApiUrl + "contests", {
       ownerId: userId,
       name: contestName,
       isPublic: isPublic,
@@ -81,7 +81,7 @@ export function updateContest(
   setupAuthorizationHeader();
   try {
     const userId = LocalStorageUtils.getUserId();
-    return axios.post(ApiUrl + "update-contest/" + contestId, {
+    return axios.put(ApiUrl + "contest/" + contestId, {
       ownerId: userId,
       name: contestName,
       isPublic: isPublic,
@@ -102,7 +102,7 @@ export function addProblem(
   setupAuthorizationHeader();
   try {
     const userId = LocalStorageUtils.getUserId();
-    return axios.post(ApiUrl + "new-problem/" + contestId, {
+    return axios.post(ApiUrl + "problems/" + contestId, {
       userId: userId,
       name: problemName,
       description: problemDescription,
@@ -120,7 +120,7 @@ export function updateProblem(
   problemTimelimit
 ) {
   setupAuthorizationHeader();
-  return axios.post(ApiUrl + "update-problem/" + problemId, {
+  return axios.put(ApiUrl + "problem/" + problemId, {
     name: problemName,
     description: problemDescription,
     timelimit: problemTimelimit
@@ -129,12 +129,12 @@ export function updateProblem(
 
 export function deleteContest(contestId) {
   setupAuthorizationHeader();
-  return axios.delete(ApiUrl + "delete-contest/" + contestId);
+  return axios.delete(ApiUrl + "contest/" + contestId);
 }
 
 export function deleteProblem(problemId) {
   setupAuthorizationHeader();
-  return axios.delete(ApiUrl + "delete-problem/" + problemId);
+  return axios.delete(ApiUrl + "problem/" + problemId);
 }
 
 export function uploadFiles(problemId, formData) {
@@ -142,7 +142,7 @@ export function uploadFiles(problemId, formData) {
   const config = {
     headers: { "content-type": "multipart/form-data" }
   };
-  return axios.post(ApiUrl + "upload-files/" + problemId, formData, config);
+  return axios.post(ApiUrl + "files/" + problemId, formData, config);
 }
 
 export function getInTests(problemId) {
@@ -157,7 +157,7 @@ export function getOkTests(problemId) {
 
 export function deleteFile(fId) {
   setupAuthorizationHeader();
-  return axios.delete(ApiUrl + "delete-file/" + fId);
+  return axios.delete(ApiUrl + "file/" + fId);
 }
 
 export function getSources(problemId) {
@@ -180,7 +180,7 @@ export function submitContestantSource(problemId, formData) {
   const config = {
     headers: { "content-type": "multipart/form-data" }
   };
-  return axios.post(ApiUrl + "contestant-submit/" + problemId, formData, config);
+  return axios.post(ApiUrl + "submit/" + problemId, formData, config);
 }
 
 export function getSubmission(submissionId) {

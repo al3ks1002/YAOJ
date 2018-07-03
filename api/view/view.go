@@ -42,26 +42,23 @@ func (view View) Start() {
 	s.Handle("/submissions/{problem-id}", authMiddleware(SubmissionsHandler(&view))).Methods("GET")
 	s.Handle("/submission/{submission-id}", authMiddleware(SubmissionHandler(&view))).Methods("GET")
 	s.Handle("/results/{submission-id}", authMiddleware(ResultsHandler(&view))).Methods("GET")
-
-	s.Handle("/new-contest", authMiddleware(NewContestHandler(&view))).Methods("POST")
-	s.Handle("/new-problem/{contest-id}", authMiddleware(NewProblemHandler(&view))).Methods("POST")
-
-	s.Handle("/delete-contest/{contest-id}", authMiddleware(DeleteContestHandler(&view))).Methods("DELETE")
-	s.Handle("/delete-problem/{problem-id}", authMiddleware(DeleteProblemHandler(&view))).Methods("DELETE")
-
-	s.Handle("/update-contest/{contest-id}", authMiddleware(UpdateContestHandler(&view))).Methods("POST")
-	s.Handle("/update-problem/{problem-id}", authMiddleware(UpdateProblemHandler(&view))).Methods("POST")
-
-	s.Handle("/upload-files/{problem-id}", authMiddleware(UploadFilesHandler(&view))).Methods("POST")
-
 	s.Handle("/in-tests/{problem-id}", authMiddleware(FilesHandler(&view, "in"))).Methods("GET")
 	s.Handle("/ok-tests/{problem-id}", authMiddleware(FilesHandler(&view, "ok"))).Methods("GET")
 	s.Handle("/sources/{problem-id}", authMiddleware(FilesHandler(&view, "cpp"))).Methods("GET")
 
-	s.Handle("/delete-file/{f-id}", authMiddleware(DeleteFileHandler(&view))).Methods("DELETE")
+	s.Handle("/contests", authMiddleware(NewContestHandler(&view))).Methods("POST")
+	s.Handle("/problems/{contest-id}", authMiddleware(NewProblemHandler(&view))).Methods("POST")
+	s.Handle("/files/{problem-id}", authMiddleware(UploadFilesHandler(&view))).Methods("POST")
+
+	s.Handle("/contest/{contest-id}", authMiddleware(UpdateContestHandler(&view))).Methods("PUT")
+	s.Handle("/problem/{problem-id}", authMiddleware(UpdateProblemHandler(&view))).Methods("PUT")
+
+	s.Handle("/contest/{contest-id}", authMiddleware(DeleteContestHandler(&view))).Methods("DELETE")
+	s.Handle("/problem/{problem-id}", authMiddleware(DeleteProblemHandler(&view))).Methods("DELETE")
+	s.Handle("/file/{f-id}", authMiddleware(DeleteFileHandler(&view))).Methods("DELETE")
 
 	s.Handle("/execute/{f-id}", authMiddleware(ExecuteHandler(&view))).Methods("POST")
-	s.Handle("/contestant-submit/{problem-id}", authMiddleware(ContestantSubmitHandler(&view))).Methods("POST")
+	s.Handle("/submit/{problem-id}", authMiddleware(ContestantSubmitHandler(&view))).Methods("POST")
 
 	headersOk := handlers.AllowedHeaders([]string{"X-Requested-With", "Authorization", "X-Auth-Key", "X-Auth-Secret", "Content-Type"})
 	originsOk := handlers.AllowedOrigins([]string{"*"})

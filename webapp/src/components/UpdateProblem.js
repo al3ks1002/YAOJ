@@ -183,6 +183,8 @@ class UpdateProblem extends Component {
           validationState={this.getDescriptionValidationState()}
         >
           <FormControl
+            componentClass="textarea"
+            style={{ height: 300 }}
             type="text"
             value={this.state.problemDescription}
             placeholder="Problem description"
