@@ -1,12 +1,10 @@
 import React, { Component } from "react";
 
-import { Table } from "react-bootstrap";
+import { Button, Table } from "antd";
 
 import loading from "../assets/loading.svg";
 import Styles from "../utils/styles.js";
 import * as AxiosUtils from "../utils/axios.js";
-
-import TestRow from "../components/TestRow.js";
 
 class TestList extends Component {
   constructor(props) {
@@ -95,6 +93,33 @@ class TestList extends Component {
   }
 
   render() {
+    const columns = [
+      {
+        title: "Name",
+        dataIndex: "FileName",
+        sorter: (a, b) => {
+          let aName = a.FileName.toString();
+          let bName = b.FileName.toString();
+          return aName > bName;
+        },
+        defaultSortOrder: true,
+        render: (name, record) => (
+          <a href={"http://localhost:8081/" + record.FId}>{record.FileName}</a>
+        )
+      },
+      {
+        title: "Delete",
+        render: (text, record) => (
+          <Button
+            type="danger"
+            onClick={() => this.deleteTestCallback(record.FId)}
+          >
+            x
+          </Button>
+        )
+      }
+    ];
+
     if (this.state.error) {
       throw this.state.error;
     }
@@ -102,58 +127,24 @@ class TestList extends Component {
     if (this.state.loaded === 2) {
       return (
         <div style={Styles.flex}>
-          <Table striped bordered condensed hover>
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Delete</th>
-              </tr>
-            </thead>
-            <tbody>
-              {this.state.inTests
-                .sort(
-                  (a, b) =>
-                    (a.FileName > b.FileName) - (a.FileName < b.FileName)
-                )
-                .map((test, i) => {
-                  return (
-                    <TestRow
-                      key={i}
-                      name={test.FileName}
-                      fId={test.FId}
-                      deleteTestCallback={this.deleteTestCallback}
-                    />
-                  );
-                })}
-            </tbody>
-          </Table>
-          <aside>
-            <Table striped bordered condensed hover>
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Delete</th>
-                </tr>
-              </thead>
-              <tbody>
-                {this.state.okTests
-                  .sort(
-                    (a, b) =>
-                      (a.FileName > b.FileName) - (a.FileName < b.FileName)
-                  )
-                  .map((test, i) => {
-                    return (
-                      <TestRow
-                        key={i}
-                        name={test.FileName}
-                        fId={test.FId}
-                        deleteTestCallback={this.deleteTestCallback}
-                      />
-                    );
-                  })}
-              </tbody>
-            </Table>
-          </aside>
+          <Table
+            bordered
+            pagination={false}
+            size="small"
+            columns={columns}
+            rowKey={record => record.FId}
+            dataSource={this.state.inTests}
+            loading={this.state.loading}
+          />
+          <Table
+            bordered
+            pagination={false}
+            size="small"
+            columns={columns}
+            rowKey={record => record.FId}
+            dataSource={this.state.okTests}
+            loading={this.state.loading}
+          />
         </div>
       );
     }

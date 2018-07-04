@@ -290,6 +290,9 @@ func (ctrl *Controller) RunSubmission(submissionId string, fId string, problemId
 	}
 
 	// Update score
+	if numTotalTests == 0 {
+		numTotalTests = 1
+	}
 	err = ctrl.Repository.UpdateSubmissionScore(submissionId, float64(numOkTests)/float64(numTotalTests)*100)
 	if err != nil {
 		return err

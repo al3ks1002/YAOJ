@@ -1,11 +1,23 @@
 import React, { Component } from "react";
-import ProblemRow from "./ProblemRow.js";
 
-import { Table } from "react-bootstrap";
+import { Table } from "antd";
 
 import loading from "../assets/loading.svg";
 import Styles from "../utils/styles.js";
 import * as AxiosUtils from "../utils/axios.js";
+
+const columns = [
+  {
+    title: "#",
+    dataIndex: "Id",
+    sorter: (a, b) => a.Id - b.Id
+  },
+  {
+    title: "Name",
+    dataIndex: "Name",
+    render: (name, record) => <a href={"/problem/" + record.Id}>{name}</a>
+  }
+];
 
 class ProblemList extends Component {
   constructor(props) {
@@ -45,19 +57,16 @@ class ProblemList extends Component {
         return <div>There are no problems at the moment.</div>;
       }
       return (
-        <Table striped bordered condensed hover>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Name</th>
-            </tr>
-          </thead>
-          <tbody>
-            {this.state.problems.map((problem, i) => {
-              return <ProblemRow key={i} id={problem.Id} name={problem.Name} />;
-            })}
-          </tbody>
-        </Table>
+        <div>
+          <Table
+            bordered
+            pagination={false}
+            columns={columns}
+            rowKey={record => record.Id}
+            dataSource={this.state.problems}
+            loading={this.state.loading}
+          />
+        </div>
       );
     }
 

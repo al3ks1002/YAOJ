@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Panel, ControlLabel, Glyphicon } from "react-bootstrap";
+import { Card } from "antd";
 
 import * as LocalStorageUtils from "../utils/localStorage.js";
 
@@ -14,19 +14,14 @@ class Profile extends Component {
     if (profile) {
       return (
         <div className="container">
-          <div className="profile-area">
-            <h1>{profile.name}</h1>
-            <Panel header="Profile">
-              <img src={profile.picture} alt="profile" />
-              <div>
-                <ControlLabel>
-                  <Glyphicon glyph="user" /> Nickname
-                </ControlLabel>
-                <h3>{profile.nickname}</h3>
-              </div>
-              <pre>{JSON.stringify(profile, null, 2)}</pre>
-            </Panel>
-          </div>
+          <Card title="Profile">
+            <img src={profile.picture} alt="profile" />
+            <br/>
+            <font size="5">Username: {profile.name}</font>
+            <br/>
+            <font size="5">Nickname: {profile.nickname}</font>
+            <br/>
+          </Card>
         </div>
       );
     } else {

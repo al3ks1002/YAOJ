@@ -1,11 +1,43 @@
 import React, { Component } from "react";
-import ContestRow from "./ContestRow.js";
 
-import { Table } from "react-bootstrap";
+import { Card, Table } from "antd";
 
 import loading from "../assets/loading.svg";
 import Styles from "../utils/styles.js";
 import * as AxiosUtils from "../utils/axios.js";
+
+const columns = [
+  {
+    title: "#",
+    dataIndex: "Id",
+    sorter: (a, b) => a.Id - b.Id,
+  },
+  {
+    title: "Name",
+    dataIndex: "Name",
+    render: (name, record) => <a href={"/contest/" + record.Id}>{name}</a>
+  },
+  {
+    title: "User",
+    dataIndex: "UserName"
+  },
+  {
+    title: "Start time",
+    dataIndex: "StartTime",
+    render: startTime => {
+      return new Date(startTime).toString();
+    },
+    sorter: (a, b) => new Date(a.StartTime) - new Date(b.StartTime)
+  },
+  {
+    title: "End time",
+    dataIndex: "EndTime",
+    render: endTime => {
+      return new Date(endTime).toString();
+    },
+    sorter: (a, b) => new Date(a.EndTime) - new Date(b.EndTime)
+  }
+];
 
 class ContestList extends Component {
   constructor(props) {
@@ -43,31 +75,18 @@ class ContestList extends Component {
 
     if (this.state.loaded) {
       if (this.state.contests.length === 0) {
-        return <div>There are no contests at the moment.</div>;
+        return <Card>There are no contests at the moment.</Card>;
       }
       return (
-        <div style={{ width: 700, marginLeft: 30 }}>
-          <Table striped bordered condensed hover>
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Name</th>
-                <th>User</th>
-              </tr>
-            </thead>
-            <tbody>
-              {this.state.contests.map(function(contest, i) {
-                return (
-                  <ContestRow
-                    key={i}
-                    id={contest.Id}
-                    name={contest.Name}
-                    userName={contest.UserName}
-                  />
-                );
-              })}
-            </tbody>
-          </Table>
+        <div className="container">
+          <Table
+            bordered
+            pagination={false}
+            columns={columns}
+            rowKey={record => record.Id}
+            dataSource={this.state.contests}
+            loading={this.state.loading}
+          />
         </div>
       );
     }

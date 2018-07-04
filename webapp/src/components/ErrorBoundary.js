@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Alert } from "react-bootstrap";
+import { Alert } from "antd";
 
 class ErrorBoundary extends Component {
   constructor(props) {
@@ -23,15 +23,20 @@ class ErrorBoundary extends Component {
     if (this.state.errorInfo) {
       // Error path
       return (
-        <Alert style={{ width: 500 }} bsStyle="danger">
-          Something went wrong.
-          <br />
-          <details style={{ whiteSpace: "pre-wrap" }}>
-            {this.state.error && this.state.error.toString()}
-            <br />
-            {this.state.errorInfo.componentStack}
-          </details>
-        </Alert>
+        <div className="container">
+          <Alert
+            type="error"
+            message={
+              <div>
+                <font size="3">Something went wrong.</font>
+                <br />
+                <details style={{ whiteSpace: "pre-wrap" }}>
+                  {this.state.error && this.state.error.toString()}
+                </details>
+              </div>
+            }
+          />
+        </div>
       );
     }
     // Normally, just render children

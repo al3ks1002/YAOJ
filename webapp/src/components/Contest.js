@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Button, Panel } from "react-bootstrap";
+import { Button, Card } from "antd";
 
 import * as LocalStorageUtils from "../utils/localStorage.js";
 import loading from "../assets/loading.svg";
@@ -91,50 +91,46 @@ class Contest extends Component {
 
     if (this.state.loaded) {
       return (
-        <div>
-          <div style={{ width: 700, marginLeft: 30 }}>
-            <Panel>
-              <Panel.Heading>
-                <h4>{this.state.contest.Name}</h4>
-              </Panel.Heading>
-              <Panel.Body>
+        <div className="container">
+          <div>
+            <Card title={<font size="4.5">{this.state.contest.Name}</font>}>
+              <p>
                 {!this.state.contest.IsPublic && "Not "}
-                Public
-              </Panel.Body>
-              <Panel.Body>
+                Public contest
+              </p>
+              <p>
                 Start time: {new Date(this.state.contest.StartTime).toString()}
-              </Panel.Body>
-              <Panel.Body>
-                End time: {new Date(this.state.contest.EndTime).toString()}
-              </Panel.Body>
-            </Panel>
+              </p>
+              <p>End time: {new Date(this.state.contest.EndTime).toString()}</p>
+            </Card>
             <br />
             <ProblemList contestId={this.state.id} />
           </div>
-          <aside>
-            <div>
-              {this.isMyContest(this.state.contest) && (
-                <div>
-                  <br />
-                  <Button bsStyle="primary" onClick={this.handleAddProblem}>
-                    Add problem
-                  </Button>
+          <div>
+            {this.isMyContest(this.state.contest) && (
+              <Card title={<font size="3.5">Setter menu:</font>}>
+                <div style={Styles.flex}>
+                  <div style={{ marginRight: 30 }}>
+                    <Button type="primary" onClick={this.handleAddProblem}>
+                      Add problem
+                    </Button>
+                  </div>
 
-                  <br />
-                  <br />
-                  <Button onClick={this.handleUpdateContest}>
-                    Update contest
-                  </Button>
+                  <div style={{ marginRight: 30 }}>
+                    <Button onClick={this.handleUpdateContest}>
+                      Update contest
+                    </Button>
+                  </div>
 
-                  <br />
-                  <br />
-                  <Button bsStyle="danger" onClick={this.handleDeleteContest}>
-                    Delete contest
-                  </Button>
+                  <div style={{ marginRight: 30 }}>
+                    <Button type="danger" onClick={this.handleDeleteContest}>
+                      Delete contest
+                    </Button>
+                  </div>
                 </div>
-              )}
-            </div>
-          </aside>
+              </Card>
+            )}
+          </div>
         </div>
       );
     }

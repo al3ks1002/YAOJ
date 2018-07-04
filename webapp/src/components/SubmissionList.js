@@ -1,7 +1,6 @@
 import React, { Component } from "react";
-import SubmissionRow from "./SubmissionRow.js";
 
-import { Table } from "react-bootstrap";
+import { Card, Table } from "antd";
 import * as LocalStorageUtils from "../utils/localStorage.js";
 
 import loading from "../assets/loading.svg";
@@ -26,6 +25,15 @@ class SubmissionList extends Component {
     try {
       const userId = LocalStorageUtils.getUserId();
       return userId === contest.OwnerId;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  isMySubmission(currentUserId) {
+    try {
+      const userId = LocalStorageUtils.getUserId();
+      return userId === currentUserId;
     } catch (error) {
       return false;
     }
@@ -57,6 +65,7 @@ class SubmissionList extends Component {
                 });
                 AxiosUtils.getSubmissions(problemId)
                   .then(result => {
+                    console.log(result.data);
                     this.setState({
                       submissions: result.data,
                       loaded: true
@@ -88,47 +97,89 @@ class SubmissionList extends Component {
   }
 
   render() {
+    const columns = [
+      {
+        title: "#",
+        dataIndex: "Id",
+        defaultSortOrder: true,
+        sorter: (a, b) => parseInt(a.Id, 10) - parseInt(b.Id, 10)
+      },
+      {
+        title: "User",
+        dataIndex: "UserName"
+      },
+      {
+        title: "Code",
+        render: (text, record) => {
+          if (
+            this.isMySubmission(record.UserId) ||
+            this.isMyContest(this.state.contest)
+          ) {
+            return <a href={"http://localhost:8081/" + record.FId}>Code</a>;
+          } else {
+            return "-";
+          }
+        }
+      },
+      {
+        title: "Status",
+        dataIndex: "Status",
+        render: (text, record) => {
+          if (record.Status === "Done") {
+            return record.Score;
+          } else {
+            return record.Status;
+          }
+        }
+      },
+      {
+        title: "Time",
+        dataIndex: "Timestamp",
+        render: timestamp => new Date(timestamp).toString()
+      },
+      {
+        title: "Result",
+        dataIndex: "Result",
+        render: (text, record) => {
+          if (
+            this.isMySubmission(record.UserId) ||
+            this.isMyContest(this.state.contest)
+          ) {
+            return <a href={"/results/" + record.Id}>Result</a>;
+          } else {
+            return "-";
+          }
+        }
+      }
+    ];
+
     if (this.state.error) {
       throw this.state.error;
     }
 
     if (this.state.loaded) {
       return (
-        <div style={{ width: 700, marginLeft: 30 }}>
-          <Table striped bordered condensed hover>
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>User</th>
-                <th>Code</th>
-                <th>Status</th>
-                <th>Time</th>
-                <th>Result</th>
-              </tr>
-            </thead>
-            <tbody>
-              {this.state.submissions
-                .sort((a, b) => new Date(a.Timestamp) - new Date(b.Timestamp))
-                .map((submission, i) => {
-                  return (
-                    <SubmissionRow
-                      key={i}
-                      id={submission.Id}
-                      userId={submission.UserId}
-                      userName={submission.UserName}
-                      fId={submission.FId}
-                      status={submission.Status}
-                      score={submission.Score}
-                      timestamp={submission.Timestamp}
-                      contestOwnerId={this.state.contest.OwnerId}
-                    />
-                  );
-                })}
-            </tbody>
-          </Table>
+        <div className="container">
+          <Card
+            title={
+              <a href={"/problem/" + this.state.problemId}>
+                {this.state.problem.Name}
+              </a>
+            }
+          >
+            <Table
+              bordered
+              size="small"
+              pagination={false}
+              columns={columns}
+              rowKey={record => record.Id}
+              dataSource={this.state.submissions}
+              loading={this.state.loading}
+            />
+          </Card>
         </div>
       );
-   }
+    }
 
     return (
       <div className="container">

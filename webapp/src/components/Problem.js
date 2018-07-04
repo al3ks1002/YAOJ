@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Well, Button, Panel } from "react-bootstrap";
+import { Button, Card } from "antd";
 import Dropzone from "react-dropzone";
 
 import * as LocalStorageUtils from "../utils/localStorage.js";
@@ -236,125 +236,159 @@ class Problem extends Component {
       var submitButton = <div />;
       if (this.canSubmit()) {
         submitButton = (
-          <div style={Styles.flex}>
-            <Dropzone
-              multiple={false}
-              onDrop={this.onContestantSourceDrop.bind(this)}
-            >
-              <p>Upload source code.</p>
-              <br />
-              <p>Only .cpp files are accepted.</p>
-            </Dropzone>
-            <aside>
-              <h2>Dropped source</h2>
-              <ul>
-                {this.state.contestantSource && (
-                  <li>
-                    {this.state.contestantSource.name} -{" "}
-                    {this.state.contestantSource.size} bytes
-                  </li>
-                )}
-              </ul>
-              <div>
-                <Button onClick={this.handleContestantSubmit}>
-                  Submit source
-                </Button>
-              </div>
-            </aside>
-          </div>
-        );
-      }
-      return (
-        <div style={Styles.flex}>
-          <div style={Styles.default}>
-            <Panel>
-              <Panel.Heading>
-                <h5>Contest: {this.state.contest.Name}</h5>
-              </Panel.Heading>
-              <Panel.Body>
-                <div>
-                  <h4>Problem: {this.state.problem.Name}</h4>
-                </div>
-                <br />
-                <p>Timelimit: {this.state.problem.Timelimit} ms</p>
-                <Well>{this.state.problem.Description}</Well>
-              </Panel.Body>
-            </Panel>
-            {this.isMyContest(this.state.contest) && (
-              <div>
-                <br />
-                <Button onClick={this.handleUpdateProblem}>
-                  Update problem
-                </Button>
-                <br />
-                <br />
-                <Button bsStyle="danger" onClick={this.handleDeleteProblem}>
-                  Delete Problem
-                </Button>
-              </div>
-            )}
+          <div>
             <br />
-            <Button onClick={this.handleSeeSubmissions}>Submissions</Button>
-          </div>
-          {this.isMyContest(this.state.contest) ? (
-            <div>
+            <Card>
               <div style={Styles.flex}>
-                <Dropzone onDrop={this.onTestsDrop.bind(this)}>
-                  <p>Upload tests.</p>
-                  <br />
-                  <p>Only .in and .ok files are accepted.</p>
-                </Dropzone>
-                <div style={{ marginRight: 30, marginLeft: 30 }}>
-                  <aside>
-                    <h3>Dropped tests</h3>
-                    <ul>
-                      {this.state.tests.map((file, i) => (
-                        <li key={i}>
-                          {file.name} - {file.size} bytes
-                        </li>
-                      ))}
-                    </ul>
-                    <div>
-                      <Button onClick={this.handleUploadTests}>
-                        Upload tests
-                      </Button>
-                    </div>
-                  </aside>
-                </div>
-                <TestList
-                  refresh={this.state.refresh}
-                  problemId={this.state.id}
-                />
-              </div>
-              <br />
-              <div style={Styles.flex}>
-                <Dropzone onDrop={this.onSourcesDrop.bind(this)}>
+                <Dropzone
+                  multiple={false}
+                  onDrop={this.onContestantSourceDrop.bind(this)}
+                >
                   <p>Upload source code.</p>
                   <br />
                   <p>Only .cpp files are accepted.</p>
                 </Dropzone>
                 <div style={{ marginRight: 30, marginLeft: 30 }}>
                   <aside>
-                    <h3>Dropped sources</h3>
-                    <ul>
-                      {this.state.sources.map((file, i) => (
-                        <li key={i}>
-                          {file.name} - {file.size} bytes
-                        </li>
-                      ))}
-                    </ul>
-                    <div>
-                      <Button onClick={this.handleUploadSources}>
-                        Upload sources
-                      </Button>
-                    </div>
+                    <Card>
+                      <font size="5">Dropped source</font>
+                      <ul>
+                        {this.state.contestantSource && (
+                          <li>
+                            {this.state.contestantSource.name} -{" "}
+                            {this.state.contestantSource.size} bytes
+                          </li>
+                        )}
+                      </ul>
+                      <div>
+                        <Button onClick={this.handleContestantSubmit}>
+                          Submit source
+                        </Button>
+                      </div>
+                    </Card>
                   </aside>
                 </div>
-                <SourceList
-                  refresh={this.state.refresh}
-                  problemId={this.state.id}
-                />
               </div>
+            </Card>
+          </div>
+        );
+      }
+      return (
+        <div style={Styles.flex}>
+          <div style={Styles.default}>
+            <Card
+              title={
+                <font size="3.5">
+                  Contest:{" "}
+                  <a href={"/contest/" + this.state.contest.Id}>
+                    {this.state.contest.Name}
+                  </a>
+                </font>
+              }
+            >
+              <Card
+                title={
+                  <font size="3.5">Problem: {this.state.problem.Name}</font>
+                }
+              >
+                <p>Timelimit: {this.state.problem.Timelimit} ms</p>
+                <Card>
+                  <p>{this.state.problem.Description}</p>
+                </Card>
+              </Card>
+            </Card>
+            <br />
+            <Button onClick={this.handleSeeSubmissions}>Submissions</Button>
+
+            {this.isMyContest(this.state.contest) && (
+              <div>
+                <br />
+                <Card title="Setter menu">
+                  <div style={Styles.flex}>
+                    <div style={{ marginRight: 30 }}>
+                      <Button type="primary" onClick={this.handleUpdateProblem}>
+                        Update problem
+                      </Button>
+                    </div>
+                    <div>
+                      <Button type="danger" onClick={this.handleDeleteProblem}>
+                        Delete Problem
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              </div>
+            )}
+          </div>
+          {this.isMyContest(this.state.contest) ? (
+            <div>
+              <br />
+              <Card>
+                <div>
+                  <div style={Styles.flex}>
+                    <Dropzone onDrop={this.onTestsDrop.bind(this)}>
+                      <p>Upload tests.</p>
+                      <br />
+                      <p>Only .in and .ok files are accepted.</p>
+                    </Dropzone>
+                    <div style={{ marginRight: 30, marginLeft: 30 }}>
+                      <aside>
+                        <Card>
+                          <font size="5">Dropped tests</font>
+                          <ul>
+                            {this.state.tests.map((file, i) => (
+                              <li key={i}>
+                                {file.name} - {file.size} bytes
+                              </li>
+                            ))}
+                          </ul>
+                          <div>
+                            <Button onClick={this.handleUploadTests}>
+                              Upload tests
+                            </Button>
+                          </div>
+                        </Card>
+                      </aside>
+                    </div>
+                    <TestList
+                      refresh={this.state.refresh}
+                      problemId={this.state.id}
+                    />
+                  </div>
+                  <br />
+                  <div style={Styles.flex}>
+                    <Dropzone onDrop={this.onSourcesDrop.bind(this)}>
+                      <p>Upload source code.</p>
+                      <br />
+                      <p>Only .cpp files are accepted.</p>
+                    </Dropzone>
+                    <div style={{ marginRight: 30, marginLeft: 30 }}>
+                      <aside>
+                        <Card>
+                          <font size="5">Dropped sources</font>
+
+                          <ul>
+                            {this.state.sources.map((file, i) => (
+                              <li key={i}>
+                                {file.name} - {file.size} bytes
+                              </li>
+                            ))}
+                          </ul>
+                          <div>
+                            <Button onClick={this.handleUploadSources}>
+                              Upload sources
+                            </Button>
+                          </div>
+                        </Card>
+                      </aside>
+                    </div>
+                    <SourceList
+                      refresh={this.state.refresh}
+                      problemId={this.state.id}
+                    />
+                  </div>
+                </div>
+              </Card>
             </div>
           ) : (
             <div>{submitButton}</div>

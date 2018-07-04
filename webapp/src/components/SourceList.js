@@ -1,12 +1,11 @@
 import React, { Component } from "react";
 
-import { Table } from "react-bootstrap";
+import { Button, Table } from "antd";
 
 import loading from "../assets/loading.svg";
 import Styles from "../utils/styles.js";
 import * as AxiosUtils from "../utils/axios.js";
 
-import SourceRow from "../components/SourceRow.js";
 import history from "../utils/history";
 
 class SourceList extends Component {
@@ -94,6 +93,44 @@ class SourceList extends Component {
   }
 
   render() {
+    const columns = [
+      {
+        title: "Name",
+        dataIndex: "FileName",
+        sorter: (a, b) => {
+          let aName = a.FileName.toString();
+          let bName = b.FileName.toString();
+          return aName > bName;
+        },
+        defaultSortOrder: true,
+        render: (name, record) => (
+          <a href={"http://localhost:8081/" + record.FId}>{record.FileName}</a>
+        )
+      },
+      {
+        title: "Delete",
+        render: (text, record) => (
+          <Button
+            type="danger"
+            onClick={() => this.deleteSourceCallback(record.FId)}
+          >
+            x
+          </Button>
+        )
+      },
+      {
+        title: "Execute",
+        render: (text, record) => (
+          <Button
+            type="primary"
+            onClick={() => this.executeSourceCallback(record.FId)}
+          >
+            Run
+          </Button>
+        )
+      }
+    ];
+
     if (this.state.error) {
       throw this.state.error;
     }
@@ -101,30 +138,15 @@ class SourceList extends Component {
     if (this.state.loaded) {
       return (
         <div style={Styles.flex}>
-          <Table striped bordered condensed hover>
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Delete</th>
-                <th>Run</th>
-              </tr>
-            </thead>
-            <tbody>
-              {this.state.sources
-                .sort((a, b) => a.FileName > b.FileName)
-                .map((source, i) => {
-                  return (
-                    <SourceRow
-                      key={i}
-                      name={source.FileName}
-                      fId={source.FId}
-                      deleteSourceCallback={this.deleteSourceCallback}
-                      executeSourceCallback={this.executeSourceCallback}
-                    />
-                  );
-                })}
-            </tbody>
-          </Table>
+          <Table
+            bordered
+            pagination={false}
+            size="small"
+            columns={columns}
+            rowKey={record => record.FId}
+            dataSource={this.state.sources}
+            loading={this.state.loading}
+          />
         </div>
       );
     }

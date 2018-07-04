@@ -1,16 +1,18 @@
 import React, { Component } from "react";
 import {
-  FormGroup,
   Button,
+  FormGroup,
   Checkbox,
   FormControl,
   HelpBlock
 } from "react-bootstrap";
+import { Card } from "antd";
 
 import * as Datetime from "react-datetime";
 import "../assets/datepicker.css";
 
 import * as AxiosUtils from "../utils/axios.js";
+import Styles from "../utils/styles.js";
 import * as LocalStorageUtils from "../utils/localStorage.js";
 import history from "../utils/history";
 
@@ -172,48 +174,63 @@ class CreateOrUpdateContest extends Component {
       throw this.state.error;
     }
 
+    let title = "Update contest";
+    if (this.state.isNew) {
+      title = "New contest";
+    }
+
     return (
-      <form style={{ width: 500 }} onSubmit={this.handleSubmit.bind(this)}>
-        <FormGroup controlId="formCheckbox">
-          <Checkbox
-            checked={this.state.isPublic}
-            onChange={this.handleIsPublicChange}
-          >
-            Is public:
-          </Checkbox>
-        </FormGroup>
-        <FormGroup
-          controlId="formBasicText"
-          validationState={this.getValidationState()}
-        >
-          <FormControl
-            type="text"
-            value={this.state.contestName}
-            placeholder="Contest name"
-            onChange={this.handleContestNameChange}
-          />
-          <FormControl.Feedback />
-          <HelpBlock>
-            Contest name must be between 1 and 50 characters.
-          </HelpBlock>
-        </FormGroup>
-        <p>Start date:</p>
-        <Datetime
-          value={this.state.startTime}
-          onChange={this.handleStartTimeChange}
-          dateFormat="LLL"
-          input={false}
-        />
-        <br />
-        <p>End date:</p>
-        <Datetime
-          value={this.state.endTime}
-          onChange={this.handleEndTimeChange}
-          dateFormat="LLL"
-          input={false}
-        />
-        <Button type="submit">Submit</Button>
-      </form>
+      <div className="container">
+        <Card title={title}>
+          <form onSubmit={this.handleSubmit.bind(this)}>
+            <FormGroup controlId="formCheckbox">
+              <Checkbox
+                checked={this.state.isPublic}
+                onChange={this.handleIsPublicChange}
+              >
+                Is public:
+              </Checkbox>
+            </FormGroup>
+            <FormGroup
+              controlId="formBasicText"
+              validationState={this.getValidationState()}
+            >
+              <FormControl
+                type="text"
+                value={this.state.contestName}
+                placeholder="Contest name"
+                onChange={this.handleContestNameChange}
+              />
+              <FormControl.Feedback />
+              <HelpBlock>
+                Contest name must be between 1 and 50 characters.
+              </HelpBlock>
+            </FormGroup>
+            <div style={Styles.flex}>
+              <Card title="Start date">
+                <Datetime
+                  value={this.state.startTime}
+                  onChange={this.handleStartTimeChange}
+                  dateFormat="LLL"
+                  input={false}
+                />
+              </Card>
+              <div style={{ marginLeft: 30 }}>
+                <Card title="End date">
+                  <Datetime
+                    value={this.state.endTime}
+                    onChange={this.handleEndTimeChange}
+                    dateFormat="LLL"
+                    input={false}
+                  />
+                </Card>
+              </div>
+            </div>
+            <br />
+            <Button type="submit">Submit</Button>
+          </form>
+        </Card>
+      </div>
     );
   }
 }

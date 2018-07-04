@@ -1,7 +1,6 @@
 import React, { Component } from "react";
-import ResultRow from "./ResultRow.js";
 
-import { Table } from "react-bootstrap";
+import { Card, Table } from "antd";
 import * as LocalStorageUtils from "../utils/localStorage.js";
 
 import loading from "../assets/loading.svg";
@@ -102,39 +101,60 @@ class ResultList extends Component {
   }
 
   render() {
+    const columns = [
+      {
+        title: "Test Name",
+        dataIndex: "TestName",
+        sorter: (a, b) => a.TestName > b.TestName,
+        defaultSortOrder: true,
+        render: name => name + ".in"
+      },
+      {
+        title: "Verdict",
+        dataIndex: "Verdict",
+        render: verdict => {
+          if (verdict === "Accepted") {
+            return <div style={{ color: "green" }}><b>Accepted</b></div>;
+          } else {
+            return <div style={{ color: "red" }}><b>{verdict}</b></div>;
+          }
+        }
+      },
+      {
+        title: "Time",
+        dataIndex: "Time",
+        render: time => time + " ms"
+      }
+    ];
+
     if (this.state.error) {
       throw this.state.error;
     }
 
     if (this.state.loaded) {
       return (
-        <div style={{ width: 700, marginLeft: 30 }}>
-          <Table striped bordered condensed hover>
-            <thead>
-              <tr>
-                <th>Test name</th>
-                <th>Verdict</th>
-                <th>Time</th>
-              </tr>
-            </thead>
-            <tbody>
-              {this.state.results
-                .sort((a, b) => a.TestName > b.TestName)
-                .map((result, i) => {
-                  return (
-                    <ResultRow
-                      key={i}
-                      id={result.Id}
-                      testName={result.TestName}
-                      verdict={result.Verdict}
-                      time={result.Time}
-                      userId={this.state.submission.UserId}
-                      contestOwnerId={this.state.contest.OwnerId}
-                    />
-                  );
-                })}
-            </tbody>
-          </Table>
+        <div className="container">
+          <Card
+            title="Results"
+            extra={
+              <font size="3">
+                Go back to:{" "}
+                <a href={"/submissions/" + this.state.problem.Id}>
+                  {this.state.problem.Name}
+                </a>
+              </font>
+            }
+          >
+            <Table
+              bordered
+              pagination={false}
+              size="small"
+              columns={columns}
+              rowKey={record => record.Id}
+              dataSource={this.state.results}
+              loading={this.state.loading}
+            />
+          </Card>
         </div>
       );
     }
