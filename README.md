@@ -1,4 +1,6 @@
-# mlc
+# YAOJ - Yet another online judge
+
+An online judge web app made in React + Golang that was my Bachelors final project.
 
 Instructions:
 - Install Golang and put this repository under $GOPATH/src.
